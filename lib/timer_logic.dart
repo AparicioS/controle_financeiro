@@ -7,9 +7,9 @@ class TimerLogic {
   bool _isRunning = false;
   final List<String> _timeHistory = [];
 
-  final _currentTimeController = StreamController<String>.broadcast();
-  final _timeHistoryController = StreamController<List<String>>.broadcast();
-  final _isRunningController = StreamController<bool>.broadcast();
+  static final _currentTimeController = StreamController<String>.broadcast();
+  static final _timeHistoryController = StreamController<List<String>>.broadcast();
+  static final _isRunningController = StreamController<bool>.broadcast();
 
   Stream<String> get currentTimeStream => _currentTimeController.stream;
   Stream<List<String>> get timeHistoryStream => _timeHistoryController.stream;

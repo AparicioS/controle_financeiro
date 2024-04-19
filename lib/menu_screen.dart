@@ -1,5 +1,8 @@
+import 'package:controle_financeiro/produto.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'timer_logic.dart';
+import 'package:image_picker/image_picker.dart';
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
@@ -11,13 +14,23 @@ class MenuScreen extends StatefulWidget {
 
 class _MenuScreenState extends State<MenuScreen> {
   late TimerLogic _timerLogic;
+  late Produto produto;
 
   @override
   void initState() {
     super.initState();
     _timerLogic = TimerLogic();
+    produto = Produto.novo();
   }
+// No início do arquivo, antes da classe MenuScreen
 
+List<String> projectList = [
+  'Cafe/Lanche',
+  'Almoço',
+  'Jantar',
+  'Extra',
+];
+String selectedProject = 'Extra';
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -114,12 +127,77 @@ Container(
 ),
 
             // Parte inferior (80% da tela)
-            Expanded(
-              child: Container(
-                color: Colors.white, // Cor de fundo opcional para os 80% restantes
-                // Conteúdo vazio para os 80% restantes
-              ),
+            // Parte inferior (80% da tela)
+Expanded(
+  child: Container(
+    color: Colors.white, // Cor de fundo opcional para os 80% restantes
+    padding: const EdgeInsets.all(16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Dropdown menu de projetos
+        DropdownButton<String>(
+          hint: const Text('Categoria'),
+          value: selectedProject,
+          onChanged: (newValue) {
+            setState(() {
+              selectedProject = newValue!;
+            });
+          },
+          items: projectList.map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 16),
+        // Campo de entrada para o valor
+        TextFormField(              
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: <TextInputFormatter>[
+                FilteringTextInputFormatter.allow(RegExp('[0-9.]'))
+              ],
+              initialValue: produto.valor.toString(),
+              onSaved: (valor) => produto.valor= valor!,
+              validator: (valor) {
+                if (valor!.isEmpty) {
+                  return 'campo obrigatorio';
+                }
+                return null;
+              },
+              decoration: const InputDecoration(labelText: "Valor:"),
             ),
+        const SizedBox(height: 16),
+ElevatedButton(
+  onPressed: () async {
+    // Escolher arquivo da galeria
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    // Abrir a câmera para tirar uma foto (descomente para ativar)
+    // final pickedFile = await ImagePicker().pickImage(source: ImageSource.camera);
+
+    if (pickedFile != null) {
+      // Aqui você pode fazer o que quiser com o arquivo selecionado
+      // Por exemplo, exibir a imagem selecionada
+      // File imageFile = File(pickedFile.path);
+      // Exibir a imagem em um widget Image
+      // Image(image: FileImage(imageFile));
+      // Ou fazer upload do arquivo para um servidor, etc.
+    }
+  },
+  child: const Text('Anexar Arquivo ou Foto'),
+),
+
+        ElevatedButton(
+          onPressed: () {
+            // Implemente a lógica para salvar/enviar os dados
+          },
+          child: const Text('Enviar'),
+        ),
+      ],
+    ),
+  ),
+),
           ],
         ),
       ),
