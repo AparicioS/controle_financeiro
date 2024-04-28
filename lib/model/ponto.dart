@@ -1,60 +1,86 @@
-import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class Ponto {
   late String id;
+  late String projeto;
   late String usuario;
-  late String data;
-  late String? entrada;
-  late String? saida;
+  late String? entrada = '';
+  late String? saida = '';
 
   Ponto.novo();
 
-  Ponto({required this.id, required this.usuario, required this.data,this.entrada,this.saida});
+  Ponto(
+      {required this.id,
+      required this.projeto,
+      required this.usuario,
+      this.entrada,
+      this.saida});
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{};
-    map['anexo'] = usuario;
-    map['data'] = data;
+    map['projeto'] = projeto;
+    map['usuario'] = usuario;
     map['entrada'] = entrada;
     map['saida'] = saida;
-
     return map;
   }
-/*
-  Produto.fromDoc(QueryDocumentSnapshot doc) {
+
+  Ponto.fromDoc(QueryDocumentSnapshot doc) {
+    // ignore: unnecessary_null_comparison
     if (doc != null) {
-      Map<String, dynamic> map = doc.data();
-      this.id = doc.id;
-      this.categoria = map['categoria'];
-      this.descricao = map['descricao'];
-      this.valor = map['valor'];
-      this.unidade = map['unidade'];
-      this.composicao = map['composicao'];
+      Map<String, dynamic> map = doc.data() as Map<String, dynamic>;
+      id = doc.id;
+      projeto = map['projeto'];
+      usuario = map['usuario'];
+      entrada = map['entrada'];
+      saida = map['saida'];
     }
   }
-*/
+
   Ponto.fromMap(Map<String, dynamic> map) {
+    projeto = map['projeto'];
     usuario = map['usuario'];
-    data = map['data'];
     entrada = map['entrada'];
     saida = map['saida'];
-    }  /*
-  static getDropdownMenuCategorias(){
-        return Estabelecimento().categoria.map((doc) => DropdownMenuItem<String>(
-                child: Text(doc),
-                value: doc,
-              ))
-          .toList();
-          
   }
-  */
-  static getDropdownMenuUnidade(){
-        return ["Unidade",
-			          "Lista",
-			          "Fracionado"].map((doc) => DropdownMenuItem<String>(
-                value: doc,
-                child: Text(doc),
-              ))
-          .toList();
+
+  setEntrada() {
+    entrada = DateFormat('dd/MM HH:mm').format(DateTime.now());
+  }
+
+  setSaida() {
+    saida = DateFormat('dd/MM HH:mm').format(DateTime.now());
+  }
+
+  bool isStart() {
+    return (entrada!.isNotEmpty && saida!.isEmpty);
+  }
+
+  DateTime getEntrada() {
+    return DateFormat('dd/MM HH:mm').parse(entrada!);
+  }
+
+  DateTime getSaida() {
+    return DateFormat('dd/MM HH:mm').parse(saida!);
+  }
+
+  Duration getDuracao() {
+    if(isStart()){
+      return const Duration(hours: 0, minutes: 0, seconds: 0);
+    }
+    return getSaida().difference(getEntrada());
+  }
+  String getDuracaoToString() {
+    return formatDuration(getDuracao().toString());
+  }
+
+  getPonto() {
+    return '$entrada - $saida';
+  }
+
+  String formatDuration(String duration) {    
+    List<String> parts = duration.split(':');
+    return parts.sublist(0, parts.length - 1).join(':');
   }
 }

@@ -1,5 +1,8 @@
+import 'package:controle_financeiro/control/ponto_control.dart';
+import 'package:controle_financeiro/model/ponto.dart';
+import 'package:controle_financeiro/view/layout.dart';
 import 'package:flutter/material.dart';
-import '../timer_logic.dart';
+import '../control/timer_logic.dart';
 
 class PontoScreen extends StatefulWidget {
   const PontoScreen({super.key});
@@ -11,18 +14,19 @@ class PontoScreen extends StatefulWidget {
 
 class _PontoScreenState extends State<PontoScreen> {
   late TimerLogic _timerLogic;
+  late PontoControl _ctrlPonto;
 
   @override
   void initState() {
     super.initState();
     _timerLogic = TimerLogic();
+    _ctrlPonto = PontoControl();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.80,
-      color: Colors.grey[300],
       padding: const EdgeInsets.all(1),
       child: Stack(
         children: [
@@ -33,22 +37,11 @@ class _PontoScreenState extends State<PontoScreen> {
                   //mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    StreamBuilder<String>(
-                      stream: _timerLogic.currentTimeStream,
-                      initialData: '',
-                      builder: (context, snapshot) {
-                        return Text(
-                          '${snapshot.data}',
-                          style: const TextStyle(fontSize: 24),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    StreamBuilder<List<String>>(
-                      stream: _timerLogic.timeHistoryStream,
+                    StreamBuilder<List<Ponto>>(
+                      stream: _ctrlPonto.timeHistoryStream,
                       initialData: const [],
                       builder: (context, snapshot) {
-                        final List<String> timeHistory = snapshot.data!;
+                        final List<Ponto> timeHistory = snapshot.data!;
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -58,7 +51,7 @@ class _PontoScreenState extends State<PontoScreen> {
                               child: ListView.builder(
                                 itemCount: timeHistory.length,
                                 itemBuilder: (context, index) {
-                                  return Text(timeHistory[index]);
+                                  return Text(timeHistory[index].getPonto()+'total'+timeHistory[index].getDuracaoToString());
                                 },
                               ),
                             ),
@@ -86,16 +79,17 @@ class _PontoScreenState extends State<PontoScreen> {
           Positioned(
             bottom: 10,
             right: 10,
-            child: FloatingActionButton(
+            child: BotaoRodape(
               onPressed: () {
                 _timerLogic.startStopTimer();
+                _ctrlPonto.startStopTimer();
               },
               child: StreamBuilder<bool>(
                 stream: _timerLogic.isRunningStream,
                 initialData: false,
                 builder: (context, snapshot) {
                   //return Icon(snapshot.data == true ? Icons.pause : Icons.play_arrow);
-                    return Text(snapshot.data == true ? 'Pausar' : 'Iniciar');
+                    return Text(snapshot.data == true ? 'Pausar' : 'Iniciar',style: TextStyle(color: Cor.textoBotaoAzul()),);
                 },
               ),
             ),
