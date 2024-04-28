@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
-class Produto {
-  late String id ='';
-  late String usuario ='';
-  late String projeto ='';
-  late String categoria ='';
-  late String descricao ='';
-  late String valor ='';
-  late String anexo ='';
+class Despesa {
+  late String id;
+  late String usuario;
+  late String projeto;
+  late String categoria;
+  late String? descricao;
+  late String valor;
+  late String? urlImage;
 
-  Produto.novo();
+  Despesa.novo();
 
-  Produto(this.id, this.usuario, this.projeto,this.categoria,this.descricao, this.valor,this.anexo);
+  Despesa(this.id, this.usuario, this.projeto,this.categoria,this.descricao, this.valor,this.urlImage);
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{};
@@ -20,7 +20,7 @@ class Produto {
     map['categoria'] = categoria;
     map['descricao'] = descricao;
     map['valor'] = valor;
-    map['anexo'] = anexo;
+    map['urlImage'] = urlImage;
 
     return map;
   }
@@ -37,13 +37,13 @@ class Produto {
     }
   }
 */
-  Produto.fromMap(Map<String, dynamic> map) {
+  Despesa.fromMap(Map<String, dynamic> map) {
     usuario = map['usuario'];
     projeto = map['projeto'];
     categoria = map['categoria'];
     descricao = map['descricao'];
     valor = map['valor'];
-    anexo = map['anexo'];
+    urlImage = map['urlImage'];
     }  /*
   static getDropdownMenuCategorias(){
         return Estabelecimento().categoria.map((doc) => DropdownMenuItem<String>(

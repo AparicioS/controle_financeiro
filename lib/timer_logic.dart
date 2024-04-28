@@ -39,7 +39,7 @@ class TimerLogic {
 
   void startStopTimer() {
     if (!_isRunning) {
-      _timeHistory.add(_getCurrentTime());
+      _timeHistory.add('${newDay()}-${_getCurrentTime()}');
     } else {
       _timeHistory[_timeHistory.length - 1] += ' - ${_getCurrentTime()}';
     }
@@ -57,10 +57,24 @@ class TimerLogic {
     _timeHistoryController.add([]);
     _isRunningController.add(false);
   }
+String newDay() {
+  for (String item in _timeHistory) {
+    if (item.contains(_getCurrentDay())) {
+      return "";
+    }
+  }
+  return _getCurrentDay();
+}
+
+String _getCurrentDay() {
+  final now = DateTime.now();
+  final formattedDate = DateFormat('dd/MM').format(now);
+  return formattedDate;
+}
 
 String _getCurrentTime() {
   final now = DateTime.now();
-  final formattedDate = DateFormat('dd/MM HH:mm').format(now);
+  final formattedDate = DateFormat('HH:mm').format(now);
   return formattedDate;
 }
 
