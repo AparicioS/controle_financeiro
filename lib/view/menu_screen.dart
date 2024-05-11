@@ -26,14 +26,14 @@ class _MenuScreenState extends State<MenuScreen> {
           appBar: AppBar(
             title: const Text('Controle Financeiro'),
             bottom: const TabBar(labelStyle: TextStyle(fontSize: 20),
-              indicator: BoxDecoration(color: Color.fromRGBO(41,57,152,1),border: Border(left: BorderSide(width: 10)),
+              indicator: BoxDecoration(color: Color.fromRGBO(41,57,152,1),
                     borderRadius: BorderRadius.all(
                       Radius.circular(20)
                     )),
-              labelColor: Colors.white,indicatorColor: Color.fromRGBO(41,57,152, 1),
+              labelColor: Color.fromRGBO(255, 255, 255, 1),
               tabs: [
-                Tab(text: 'Ponto'),
-                Tab(text: 'Despesas'),
+                Tab(child: Center(widthFactor: 200,child: Text('Ponto')),),
+                Tab(child: Center(widthFactor: 200,child: Text('Despesas')),),
               ],
             ),
           ),

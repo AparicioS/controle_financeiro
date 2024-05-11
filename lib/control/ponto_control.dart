@@ -9,8 +9,15 @@ class PontoControl {
   late final List<Ponto> _historico = [];
 
   static final _timeHistoryController = StreamController<List<Ponto>>.broadcast();
+  static final _totalController = StreamController<String>.broadcast();
 
   Stream<List<Ponto>> get timeHistoryStream => _timeHistoryController.stream;
+  Stream<String> get totalStream => _totalController.stream;
+
+  String getSaldoTotal(){
+    var total='';
+    return total;
+  }
 
   void startStopTimer() {
     Ponto ponto = getPonto();
@@ -19,11 +26,18 @@ class PontoControl {
     }else{      
       ponto.setEntrada();
       _historico.add(ponto);
-    }
-
+    } 
+    _totalController.add(getTotal());
     _timeHistoryController.add(_historico);
   }
-
+  String getTotal(){  
+  late Duration  total = const Duration(hours: 0, minutes: 0, seconds: 0);
+    for (Ponto item in _historico) {      
+    total += item.getDuracao();
+    }
+    return Ponto.novo().formatDuration(total.toString());
+  }
+  
   Ponto getPonto() {
     for (Ponto item in _historico) {
       if (item.isStart()) {

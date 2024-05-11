@@ -1,18 +1,19 @@
+import 'package:cloud_firestore/cloud_firestore.dart' show QueryDocumentSnapshot;
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Projeto {
-  static Projeto _instance = Projeto._();
-  Projeto._();
+
+class Categoria {
+  static Categoria _instance = Categoria._();
+  Categoria._();
   late String id;
   late String nome;
   late String? descricao;
 
-  resetProjeto() {
-    _instance = Projeto._();
+  resetCategoria() {
+    _instance = Categoria._();
   }
 
-  factory Projeto() => _instance;
+  factory Categoria() => _instance;
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{};
@@ -21,7 +22,7 @@ class Projeto {
     return map;
   }
   
-  Projeto.fromDoc(QueryDocumentSnapshot doc) {
+  Categoria.fromDoc(QueryDocumentSnapshot doc) {
     // ignore: unnecessary_null_comparison
     if (doc != null) {
       Map<String, dynamic> map = doc.data() as Map<String, dynamic>;
@@ -31,7 +32,7 @@ class Projeto {
     }
   }
   
-  Projeto.fromMap(Map<String, dynamic> map) {
+  Categoria.fromMap(Map<String, dynamic> map) {
     nome = map['nome'];
     descricao = map['descricao'];
     }  

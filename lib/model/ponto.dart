@@ -76,7 +76,10 @@ class Ponto {
   }
 
   getPonto() {
-    return '$entrada - $saida';
+    if(saida!.isEmpty){
+      return entrada;
+    }
+    return '$entrada - $saida   saldo:${getDuracaoToString()} h';
   }
 
   String formatDuration(String duration) {    

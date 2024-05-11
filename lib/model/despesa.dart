@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Despesa {
   late String id;
@@ -15,7 +15,7 @@ class Despesa {
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{};
-    map['anexo'] = usuario;
+    map['usuario'] = usuario;
     map['projeto'] = projeto;
     map['categoria'] = categoria;
     map['descricao'] = descricao;
@@ -24,19 +24,20 @@ class Despesa {
 
     return map;
   }
-/*
-  Produto.fromDoc(QueryDocumentSnapshot doc) {
+  
+  Despesa.fromDoc(QueryDocumentSnapshot doc) {
+    // ignore: unnecessary_null_comparison
     if (doc != null) {
-      Map<String, dynamic> map = doc.data();
-      this.id = doc.id;
-      this.categoria = map['categoria'];
-      this.descricao = map['descricao'];
-      this.valor = map['valor'];
-      this.unidade = map['unidade'];
-      this.composicao = map['composicao'];
+      Map<String, dynamic> map = doc.data()as Map<String, dynamic>;
+      usuario = map['usuario'];
+      projeto = map['projeto'];
+      categoria = map['categoria'];
+      descricao = map['descricao'];
+      valor = map['valor'];
+      urlImage = map['urlImage'];
     }
   }
-*/
+
   Despesa.fromMap(Map<String, dynamic> map) {
     usuario = map['usuario'];
     projeto = map['projeto'];
@@ -44,23 +45,5 @@ class Despesa {
     descricao = map['descricao'];
     valor = map['valor'];
     urlImage = map['urlImage'];
-    }  /*
-  static getDropdownMenuCategorias(){
-        return Estabelecimento().categoria.map((doc) => DropdownMenuItem<String>(
-                child: Text(doc),
-                value: doc,
-              ))
-          .toList();
-          
-  }
-  */
-  static getDropdownMenuUnidade(){
-        return ["Unidade",
-			          "Lista",
-			          "Fracionado"].map((doc) => DropdownMenuItem<String>(
-                value: doc,
-                child: Text(doc),
-              ))
-          .toList();
-  }
+    }
 }
