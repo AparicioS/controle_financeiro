@@ -1,14 +1,17 @@
 library firebase_auth_utility;
-
 import 'dart:convert';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth_utility/local_notification.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
-class AuthControl {
+class AuthControl  {
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  cadastroEmail({required String nome,required String email,required String senha}) async{
+    UserCredential userCredential = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: senha);
+    await userCredential.user!.updateDisplayName(nome);
+  }
   /// Initialize the firebase project.
   /// Provide the Firebase_Option
   initializeApp({required options}) async {
@@ -20,8 +23,7 @@ class AuthControl {
 
   /// Phone authentication by phone number
   phoneAuthLogin(
-      {required String countryCode,
-      required String mobileNumber,
+      {required String mobileNumber,
       required Duration? timeout,
       required Function(FirebaseAuthException e) verificationFailed,
       required Function(Map responseData) codeSent}) async {
@@ -29,7 +31,7 @@ class AuthControl {
     int? resendToken;
     try {
       await auth.verifyPhoneNumber(
-        phoneNumber: "+$countryCode${mobileNumber.toString()}",
+        phoneNumber: "+55${mobileNumber.toString()}",
         timeout: timeout ?? const Duration(seconds: 120),
         verificationCompleted: (PhoneAuthCredential credential) async {
           await auth.signInWithCredential(credential);

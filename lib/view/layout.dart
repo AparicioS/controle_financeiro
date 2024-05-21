@@ -20,6 +20,10 @@ InputDecoration getInputDecoration(labelText){
                   filled: true
                 );
 }
+printSnackBar({required BuildContext context,required String texto}){
+  SnackBar snackBar = SnackBar(content: Text(texto),backgroundColor: Cor.erro(),);
+  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+}
 //ColorScheme layoutColorScheme = ColorScheme.fromSeed(seedColor: Colors.deepPurple,background: Cor.backgrud(), )
 class BotaoRodape extends TextButton {
   // ignore: use_super_parameters

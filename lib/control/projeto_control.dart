@@ -16,6 +16,8 @@ List<Projeto> buscarDespesasPorProjetoUsuario(String usuario) {
   
 Future<List<Projeto>> buscarProjeto() async{
     List<Projeto> projetos = [];
+    // ignore: avoid_print
+    print('Projeto');
     // ignore: await_only_futures
     await FirebaseFirestore.instance.collection('Projeto').get().then((value) {      
       projetos.addAll(value.docs.map((doc) => Projeto.fromDoc(doc)).toList());

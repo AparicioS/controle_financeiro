@@ -131,7 +131,7 @@ class _DespesaScreenState extends State<DespesaScreen> {
                     ),
                   ),
                   SizedBox(
-                    width: width * 0.20,
+                    width: width * 0.15,
                   ),
                   BotaoRodape(
                     onPressed: _submitData,

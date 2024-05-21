@@ -1,3 +1,4 @@
+import 'package:controle_financeiro/view/layout.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -28,6 +29,11 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
     }
 
     verificationFailed(FirebaseAuthException authException) {
+      if(authException.message!.contains('The format of the phone number provided is incorrect')){
+        printSnackBar(context: context, texto: 'numero invalido');
+        // ignore: avoid_print
+        print('numero invalido: ${authException.message}');
+      }
       // ignore: avoid_print
       print('Erro ao verificar o número de telefone: ${authException.message}');
       // Exibir mensagem de erro ao usuário, se necessário

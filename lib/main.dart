@@ -1,5 +1,8 @@
+import 'package:controle_financeiro/view/login_screen.dart';
 import 'package:controle_financeiro/view/menu_screen.dart';
-import 'package:flutter/material.dart';import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -17,15 +20,26 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Meu Aplicativo',
+      title: 'NSA automação industrial',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       routes: {
-        '/': (context) => const MenuScreen(), 
+        '/': (context) => const InitScreen(), 
         // Aqui você pode adicionar mais rotas conforme necessário
       },
     );
+  }
+}
+
+class InitScreen extends StatelessWidget {
+  const InitScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(stream: FirebaseAuth.instance.userChanges(), builder:(context, snapshot) {
+      return snapshot.hasData?const MenuScreen():const LoginScreen();
+    },);
   }
 }
