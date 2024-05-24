@@ -1,4 +1,6 @@
 
+import 'package:controle_financeiro/control/auth_control.dart';
+import 'package:controle_financeiro/model/usuario.dart';
 import 'package:controle_financeiro/view/despesa_screen.dart';
 import 'package:controle_financeiro/view/layout.dart';
 import 'package:controle_financeiro/view/ponto_screen.dart';
@@ -15,6 +17,7 @@ class MenuScreen extends StatefulWidget {
 class _MenuScreenState extends State<MenuScreen> {
   @override
   Widget build(BuildContext context) {
+    late double width = MediaQuery.of(context).size.width;
     return MaterialApp(
       title: 'Controle Financeiro',
       theme: ThemeData(
@@ -23,6 +26,14 @@ class _MenuScreenState extends State<MenuScreen> {
       home: DefaultTabController(
         length: 2, // Número de abas
         child: Scaffold(
+          drawer: Drawer(width: width*0.6, child: ListView(children: [
+            UserAccountsDrawerHeader(
+              currentAccountPicture: CircleAvatar(child: Image.asset('assets/logo.png',height: 80,)),
+              accountName: Text(Usuario().nome.toString()), 
+              accountEmail: Text(Usuario().email.toString()),decoration: BoxDecoration(color: Cor.botaoCinza()),) ,
+            ListTile(leading:const Icon(Icons.logout),title: const Text('sair'),dense: true, onTap:() =>  AuthControl().sair(),)
+            ],),
+          ),
           appBar: AppBar(
             title: const Text('Controle Financeiro'),
             bottom: const TabBar(labelStyle: TextStyle(fontSize: 20),

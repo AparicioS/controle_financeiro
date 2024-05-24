@@ -27,7 +27,6 @@ class MyApp extends StatelessWidget {
       ),
       routes: {
         '/': (context) => const InitScreen(), 
-        // Aqui você pode adicionar mais rotas conforme necessário
       },
     );
   }

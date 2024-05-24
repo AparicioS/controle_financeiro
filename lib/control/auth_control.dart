@@ -1,115 +1,51 @@
 library firebase_auth_utility;
-import 'dart:convert';
+import 'package:controle_financeiro/model/usuario.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_auth_utility/local_notification.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
-class AuthControl  {
+
+class AuthControl  {  
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  cadastroEmail({required String nome,required String email,required String senha}) async{
-    UserCredential userCredential = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: senha);
-    await userCredential.user!.updateDisplayName(nome);
-  }
-  /// Initialize the firebase project.
-  /// Provide the Firebase_Option
-  initializeApp({required options}) async {
-    WidgetsFlutterBinding.ensureInitialized();
-    await Firebase.initializeApp(
-      options: options,
-    );
-  }
 
-  /// Phone authentication by phone number
-  phoneAuthLogin(
-      {required String mobileNumber,
-      required Duration? timeout,
-      required Function(FirebaseAuthException e) verificationFailed,
-      required Function(Map responseData) codeSent}) async {
-    FirebaseAuth auth = FirebaseAuth.instance;
-    int? resendToken;
+  Future<String?> cadastrarEmail({required String nome,required String email,required String senha}) async{
     try {
-      await auth.verifyPhoneNumber(
-        phoneNumber: "+55${mobileNumber.toString()}",
-        timeout: timeout ?? const Duration(seconds: 120),
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await auth.signInWithCredential(credential);
-        },
-        verificationFailed: (FirebaseAuthException e) => verificationFailed(e),
-        codeSent: (String verificationId, int? resendToken) {
-          Map responseData = {};
-          responseData['verificationId'] = verificationId;
-          responseData['resendToken'] = resendToken;
-          resendToken = resendToken;
-          codeSent(responseData);
-        },
-        forceResendingToken: resendToken,
-        codeAutoRetrievalTimeout: (String verificationId) {},
-      );
-    } on Exception catch (e) {
-      return e.toString();
-    }
-  }
-
-  /// Verify firebase auth otp
-  Future<dynamic> verifyFirebaseAuthOtp({required requestData}) {
-    PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: requestData['verificationId'],
-        smsCode: requestData['otp']);
-
-    return signInWithPhone(credential, requestData);
-  }
-
-  /// Sign In with phone
-  Future<dynamic> signInWithPhone(
-      PhoneAuthCredential credential, requestData) async {
-    try {
-      UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
-
-      if (userCredential.user != null) {
-        return userCredential;
-      } else {
-        return null;
-      }
+      UserCredential userCredential = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: senha);
+      await userCredential.user!.updateDisplayName(nome);
+      Usuario().caregaUsuarioLitUser(_firebaseAuth.currentUser);
+      return null;
     } on FirebaseAuthException catch (e) {
-      return e.toString();
+      return e.message;
+    }
+  }
+  
+  Future<String?> entrarEmail({required String email,required String senha}) async{
+    try {
+      await _firebaseAuth.signInWithEmailAndPassword(email: email, password: senha);
+      Usuario().caregaUsuarioLitUser(_firebaseAuth.currentUser);
+      return null;
+    } on FirebaseAuthException catch (e) {
+      return e.message;
+    }
+  }
+  
+  Future<String?> entrarGoogle() async{
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+      final credential = GoogleAuthProvider.credential(accessToken: googleAuth?.accessToken,idToken: googleAuth?.idToken,);
+      await _firebaseAuth.signInWithCredential(credential);
+      Usuario().caregaUsuarioLitUser(_firebaseAuth.currentUser);
+      return null;
+    } on FirebaseAuthException catch (e) {
+      return e.message;
     }
   }
 
-  /// Firebase Logout if logged in
-  signOutFromFirebase() async {
-    await FirebaseAuth.instance.signOut();
-  }
+  Future<void> sair() async{
+      // ignore: avoid_print
+      print(Usuario().toString());
+    Usuario().resetUsuario();
+    return _firebaseAuth.signOut();
+  }  
 
-
-  /// Push Notification
-  registerNotification() async {
-    final FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-    NotificationSettings settings = await messaging.requestPermission(
-        alert: true, badge: true, provisional: false, sound: true);
-
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      LocalNotificationService().init((String? payload) {});
-
-      FirebaseMessaging.instance.getToken().then((token) {});
-
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        RemoteNotification? notification = message.notification;
-
-        String? payload = json.encode(message.data);
-        LocalNotificationService().showNotification(notification.hashCode,
-            notification!.title, notification.body, payload);
-      });
-    } else {
-      // print('User declined or has not accepted permission');
-    }
-
-    // Background notification handler
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  }
 }
-
-Future _firebaseMessagingBackgroundHandler(RemoteMessage message) async {}

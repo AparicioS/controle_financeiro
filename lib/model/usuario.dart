@@ -12,16 +12,10 @@ class Usuario {
 
   factory Usuario() => _instance;
 
-  caregaUsuarioLitUser(litUser) {
-    litUser.when(
-      (user) {
-        id = user.uid;
-        nome = user.displayName;
-        email = user.email;
-      },
-      empty: () {},
-      initializing: () {},
-    );
+  caregaUsuarioLitUser(currentUser) {
+        id = currentUser.uid;
+        nome = currentUser.displayName;
+        email = currentUser.email;
   }
 
   @override

@@ -1,7 +1,6 @@
 import 'package:controle_financeiro/control/auth_control.dart';
 import 'package:controle_financeiro/view/layout.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,9 +14,9 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isPossuiCadastro = true;
   // ignore: non_constant_identifier_names
   final _FormKey = GlobalKey<FormState>();
-  final TextEditingController _controllerNome = TextEditingController();
-  final TextEditingController _controllerEmail = TextEditingController();
-  final TextEditingController _controllerSenha = TextEditingController();
+  final TextEditingController _ctrlNome = TextEditingController();
+  final TextEditingController _ctrlEmail = TextEditingController();
+  final TextEditingController _ctrlSenha = TextEditingController();
   final AuthControl _authControl = AuthControl();
 
   @override
@@ -35,23 +34,17 @@ class _LoginScreenState extends State<LoginScreen> {
               Text('NSA',style: TextStyle(fontSize: 48,fontWeight: FontWeight.bold, color:Cor.botaoCinza()),textAlign: TextAlign.center),
               Text('Automação industrial',style: TextStyle(fontSize: 36,color:Cor.botaoCinza()),textAlign: TextAlign.center,),
               Image.asset('assets/logo.png',height: 128,color: Cor.botaoCinza(),),
-              TextButton(onPressed: () { 
-                GoogleSignIn().signIn().then((value) {
-                  // ignore: avoid_print
-                  print(value);
-                  return printSnackBar(context: context, texto:value!.id.toString());
-                });
-               },
+              TextButton(onPressed: _entrarGoogle,
               child:const Text('conta google')),
-              Visibility(visible:!isPossuiCadastro, child:TextFormField(controller: _controllerNome ,decoration: getInputDecoration('Nome:'),validator: (String?value) => value!.isNotEmpty? null :'campo obrigatorio',),),
+              Visibility(visible:!isPossuiCadastro, child:TextFormField(controller: _ctrlNome ,decoration: getInputDecoration('Nome:'),validator: (String?value) => value!.isNotEmpty? null :'campo obrigatorio',),),
               const SizedBox(height: 16),
-              TextFormField(controller: _controllerEmail ,decoration: getInputDecoration('Email'),validator:(String? value) => value!.isNotEmpty? _validaEmail(value) :'campo obrigatorio',),
+              TextFormField(controller: _ctrlEmail ,decoration: getInputDecoration('Email'),validator:(String? value) => value!.isNotEmpty? null :'campo obrigatorio',),
               const SizedBox(height: 16),
-              TextFormField(controller: _controllerSenha ,decoration: getInputDecoration('Senha:'),obscureText: true,validator: (String? value) => value!.isNotEmpty? null :'campo obrigatorio',),
+              TextFormField(controller: _ctrlSenha ,decoration: getInputDecoration('Senha:'),obscureText: true,validator: (String? value) => value!.isNotEmpty? null :'campo obrigatorio',),
               const SizedBox(height: 16),
               Visibility(visible:!isPossuiCadastro, child:TextFormField(decoration: getInputDecoration('Confirmar senha:'),obscureText: true,validator: (String? value) => value!.isNotEmpty? _validaSenha(value) :'campo obrigatorio'),),
               const SizedBox(height: 16),
-              BotaoRodape(onPressed:_submitData,
+              BotaoRodape(onPressed:isPossuiCadastro ? _entrar :_cadastrar,
                           child: Text(isPossuiCadastro ?'Entrar':'Cadastrar',style: TextStyle(color: Cor.textoBotaoAzul())),
                           ),
               const SizedBox(height: 16),
@@ -66,22 +59,23 @@ class _LoginScreenState extends State<LoginScreen> {
     ),);
   }  
 
-  void _submitData() {
+  void _cadastrar() {
     if(_FormKey.currentState!.validate()){
-      _authControl.cadastroEmail(nome: _controllerNome.text, email: _controllerEmail.text, senha: _controllerSenha.text);
-    }else{
-
+      _authControl.cadastrarEmail(nome: _ctrlNome.text, email: _ctrlEmail.text, senha: _ctrlSenha.text).then((value) => value == null? null :printSnackBar(context: context, texto: value,));
+    }
+  }
+  void _entrar() {
+    if(_FormKey.currentState!.validate()){
+      _authControl.entrarEmail( email: _ctrlEmail.text, senha: _ctrlSenha.text).then((value) => value == null ? null :printSnackBar(context: context, texto: value,));
     }
   }
   
-
-  String? _validaEmail(String? value) {
-    return !value!.contains('@')?'e-mail invalido':null;  
+  void _entrarGoogle() {
+      _authControl.entrarGoogle().then((value) => value == null ? null :printSnackBar(context: context, texto: value,));
   }
-  
 
   String? _validaSenha(String? value) {
-    return value == _controllerSenha.text ?null:'Senha não confere';   
+    return value == _ctrlSenha.text ?null:'Senha não confere';   
   }
 
 }

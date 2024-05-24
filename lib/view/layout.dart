@@ -13,6 +13,7 @@ class Cor {
   static Color titulo([double opacity = 1]) =>Color.fromRGBO(36, 9, 205, opacity);
   static Color cabecario([double opacity = 1]) =>Color.fromRGBO(113, 194, 74, opacity);
 }
+
 InputDecoration getInputDecoration(labelText){
   return InputDecoration(
                   hintText: labelText,
@@ -20,11 +21,21 @@ InputDecoration getInputDecoration(labelText){
                   filled: true
                 );
 }
-printSnackBar({required BuildContext context,required String texto}){
-  SnackBar snackBar = SnackBar(content: Text(texto),backgroundColor: Cor.erro(),);
+
+BoxDecoration getBoxDecoration(){
+  return BoxDecoration(
+                  color: Cor.botaoCinza(),
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(20),
+                  ),
+                );
+}
+
+printSnackBar({required BuildContext context,required String texto, bool isErro =true}){
+  SnackBar snackBar = SnackBar(content: Text(texto),backgroundColor:isErro ? Cor.erro():Cor.sucesso(),);
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
-//ColorScheme layoutColorScheme = ColorScheme.fromSeed(seedColor: Colors.deepPurple,background: Cor.backgrud(), )
+
 class BotaoRodape extends TextButton {
   // ignore: use_super_parameters
   BotaoRodape({super.key, onPressed, width,height,child})
@@ -34,72 +45,6 @@ class BotaoRodape extends TextButton {
                 width: width??120,
                 height: height??40,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: Cor.botaoCinza(),
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(20),
-                  ),
-                ),
+                decoration: getBoxDecoration(),
                 child: child));
 }
-
-/*
-class ScaffoldLayout extends Scaffold {
-  ScaffoldLayout({Widget body, acoes, floatingActionButton})
-      : super(
-            appBar: AppBar(
-              backgroundColor: Cor.cabecario(),
-              title: Center(
-                child: Text('Diagnostico Bovino',
-                    style: TextStyle(color: Cor.titulo(), fontSize: 30)),
-              ),
-              actions: acoes,
-            ),
-            body: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('imagens/fundoHome.jpg'),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                padding: EdgeInsets.all(5),
-                child: body),
-            floatingActionButton: floatingActionButton);
-}
-
-class BotaoRodape extends TextButton {
-  BotaoRodape({onLongPress, onPressed, child})
-      : super(
-            style: TextButton.styleFrom(primary: Colors.white),
-            onLongPress: onLongPress,
-            onPressed: onPressed,
-            child: Container(
-                width: 120,
-                height: 40,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                    color: Cor.botaoAzul(),
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(5),
-                    )),
-                child: child));
-}
-
-class AcaoTopo extends Container {
-  AcaoTopo({onPressed, icone, texto})
-      : super(
-          height: 30,
-          child: Align(
-            alignment: Alignment.bottomRight,
-            child: TextButton.icon(
-                style: TextButton.styleFrom(primary: Cor.botaoAzul()),
-                label: Text(texto,
-                    style: TextStyle(
-                        decoration: TextDecoration.underline,
-                        color: Cor.botaoAzul())),
-                icon: Icon(icone),
-                onPressed: onPressed),
-          ),
-        );
-}
-*/
