@@ -6,7 +6,6 @@ import 'package:controle_financeiro/model/categoria.dart';
 import 'package:controle_financeiro/model/despesa.dart';
 import 'package:controle_financeiro/model/projeto.dart';
 import 'package:controle_financeiro/view/layout.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -26,7 +25,7 @@ class _DespesaScreenState extends State<DespesaScreen> {
   final TextEditingController _ctrlValor = TextEditingController();
   late Despesa _despesa;
   // ignore: avoid_init_to_null
-  late XFile? _imageFile = null;
+  late File? _imageFile = null;
   bool _isProgress = false;
   static List<Projeto> _projectList =[];
   static List<Categoria> _categoryList=[];
@@ -43,10 +42,12 @@ class _DespesaScreenState extends State<DespesaScreen> {
   void _selectImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
-
-    setState(() {
-      _imageFile = pickedFile;
-    });
+    
+    if(pickedFile!= null){
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+    }
   }
 
   void _submitData() {
@@ -56,9 +57,10 @@ class _DespesaScreenState extends State<DespesaScreen> {
         _despesa.valor = _ctrlValor.text;
         _despesa.descricao = _ctrlDescricao.text;
       if (_imageFile != null) {
-        String ref =_imageFile!.path;
-        //_storage.ref(ref).putFile(_imageFile as File);
-        _despesa.urlImage =_imageFile!.path;
+        String ref = _projectList.firstWhere((element) => element.id ==_despesa.projeto,).nome;
+        String nome = '${_imageFile.hashCode}.jpg';
+        _storage.ref(ref).child(nome).putFile(_imageFile!);
+        _despesa.urlImage ='$ref/$nome';
       }
       
       DespesaControl().cadastrarDespesa(_despesa).then((value) {
@@ -126,6 +128,8 @@ class _DespesaScreenState extends State<DespesaScreen> {
                 decoration: getInputDecoration('Descrição'),
               ),
               SizedBox(height: height*0.05),
+              SizedBox(height:height*0.3 ,
+                child: _imageFile !=null ?Image.file(_imageFile!,height: height*0.3,):null),
               Row(
                 verticalDirection: VerticalDirection.down,
                 crossAxisAlignment: CrossAxisAlignment.center,
