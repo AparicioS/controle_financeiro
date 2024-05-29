@@ -7,19 +7,22 @@ import 'package:controle_financeiro/model/usuario.dart';
 
 class PontoControl {
   late final List<Ponto> _historico = [];
+  bool _isRunning = false;
 
   static final _timeHistoryController = StreamController<List<Ponto>>.broadcast();
   static final _totalController = StreamController<String>.broadcast();
+  static final _isRunningController = StreamController<bool>.broadcast();
 
   Stream<List<Ponto>> get timeHistoryStream => _timeHistoryController.stream;
   Stream<String> get totalStream => _totalController.stream;
+  Stream<bool> get isRunningStream => _isRunningController.stream;
 
   String getSaldoTotal(){
     var total='';
     return total;
   }
 
-  void startStopTimer() {
+  void startStopTimer(String? projetoId) {
     Ponto ponto = getPonto();
     if(ponto.isStart()){
       ponto.setSaida();
@@ -29,7 +32,11 @@ class PontoControl {
     } 
     _totalController.add(getTotal());
     _timeHistoryController.add(_historico);
+    
+    _isRunning = !_isRunning;
+    _isRunningController.add(_isRunning);
   }
+  
   String getTotal(){  
   late Duration  total = const Duration(hours: 0, minutes: 0, seconds: 0);
     for (Ponto item in _historico) {      

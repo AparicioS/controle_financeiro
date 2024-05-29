@@ -36,6 +36,7 @@ class _DespesaScreenState extends State<DespesaScreen> {
     _despesa = Despesa.novo();
     buscarProjeto().then((value) => _projectList =value);
     buscarCategoria().then((value) => _categoryList = value);
+    
     super.initState();
   }
 
@@ -50,26 +51,35 @@ class _DespesaScreenState extends State<DespesaScreen> {
     }
   }
 
-  void _submitData() {
+  String? _validaDescricao() {
+    return _despesa.categoria != '0' ? null:'Descrição obrigatoria para categoria Outros';   
+  }
+  
+  Future<void> _submitData() async {
     if(_FormKey.currentState!.validate()){
       setState(() => _isProgress = true);
         _FormKey.currentState!.save();
         _despesa.valor = _ctrlValor.text;
         _despesa.descricao = _ctrlDescricao.text;
       if (_imageFile != null) {
-        String ref = _projectList.firstWhere((element) => element.id ==_despesa.projeto,).nome;
-        String nome = '${_imageFile.hashCode}.jpg';
-        _storage.ref(ref).child(nome).putFile(_imageFile!);
-        _despesa.urlImage ='$ref/$nome';
+        try {
+            String ref = _projectList.firstWhere((element) => element.id ==_despesa.projeto,).nome;
+            String nome = '${_imageFile.hashCode}.jpg';
+            await _storage.ref(ref).child(nome).putFile(_imageFile!);
+            final imageUrl = await _storage.ref(ref).child(nome).getDownloadURL();      
+            DespesaControl().cadastrarDespesa(_despesa).then((value) {
+              _despesa = Despesa.novo();
+              _FormKey.currentState!.reset();
+              _ctrlDescricao.clear();
+              _ctrlValor.clear();
+              setState(() => _isProgress = false);
+            });
+            _despesa.urlImage = imageUrl;
+        //_despesa.urlImage ='$ref/$nome';
+        } on FirebaseException  {
+          setState(() => _isProgress = false);
+        }
       }
-      
-      DespesaControl().cadastrarDespesa(_despesa).then((value) {
-        _despesa = Despesa.novo();
-        _FormKey.currentState!.reset();
-        _ctrlDescricao.clear();
-        _ctrlValor.clear();
-        setState(() => _isProgress = false);
-      });
     }
   }
 
@@ -103,7 +113,7 @@ class _DespesaScreenState extends State<DespesaScreen> {
               SizedBox(height: height*0.01),
               DropdownButtonFormField<String>(
                 validator: (value) => value == null ?'selecione uma Categoria':null,
-                onSaved: (value) {
+                onChanged: (value) {
                   setState(() {
                     _despesa.categoria = value!;
                   });
@@ -114,22 +124,26 @@ class _DespesaScreenState extends State<DespesaScreen> {
                     child: Text(category.nome),
                   );
                 }).toList(),
-                decoration: getInputDecoration('Categoria'), onChanged: (String? value) {  },
+                decoration: getInputDecoration('Categoria'),
               ),
               SizedBox(height: height * 0.01),
               TextFormField(
                 controller: _ctrlValor,
-                validator: (value) => value == '' ?'informe um valor':null,
+                validator: (value) => value!.isEmpty ?'informe um valor':null,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: getInputDecoration('Valor'),
               ),
               SizedBox(height: height*0.01),
               TextFormField(controller: _ctrlDescricao,
+                validator: (String? value) => value!.isEmpty? _validaDescricao() :null,
                 decoration: getInputDecoration('Descrição'),
               ),
               SizedBox(height: height*0.05),
               SizedBox(height:height*0.3 ,
-                child: _imageFile !=null ?Image.file(_imageFile!,height: height*0.3,):null),
+                child: _imageFile ==null ?TextFormField(enabled: false,
+                validator: (value) => value!.isEmpty ?'envie uma imagem do comprovante':null,
+                decoration: const InputDecoration(hintText: 'Comprovate',),) 
+                :Image.file(_imageFile!,height: height*0.3,)),
               Row(
                 verticalDirection: VerticalDirection.down,
                 crossAxisAlignment: CrossAxisAlignment.center,

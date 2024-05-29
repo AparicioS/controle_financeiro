@@ -64,7 +64,11 @@ Stream<QuerySnapshot<Map<String, dynamic>>>  buscarCategoriaDinamica() {
 }  
   
 Future<List<Categoria>> buscarCategoria() async{
+    Categoria otros =Categoria();
+    otros.id = '0' ;
+    otros.nome = 'Outros' ;
     List<Categoria> categorias = [];
+    categorias.add(otros);
     // ignore: await_only_futures
     await FirebaseFirestore.instance.collection('Categoria').get().then((value) {      
       categorias.addAll(value.docs.map((doc) => Categoria.fromDoc(doc)).toList());

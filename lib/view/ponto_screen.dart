@@ -1,8 +1,9 @@
 import 'package:controle_financeiro/control/ponto_control.dart';
+import 'package:controle_financeiro/control/projeto_control.dart';
 import 'package:controle_financeiro/model/ponto.dart';
+import 'package:controle_financeiro/model/projeto.dart';
 import 'package:controle_financeiro/view/layout.dart';
 import 'package:flutter/material.dart';
-import '../control/timer_logic.dart';
 
 class PontoScreen extends StatefulWidget {
   const PontoScreen({super.key});
@@ -13,14 +14,15 @@ class PontoScreen extends StatefulWidget {
 }
 
 class _PontoScreenState extends State<PontoScreen> {
-  late TimerLogic _timerLogic;
   late PontoControl _ctrlPonto;
+  static List<Projeto> _projectList =[];
+  late String? _projetoId = '1';
 
   @override
   void initState() {
     super.initState();
-    _timerLogic = TimerLogic();
     _ctrlPonto = PontoControl();
+    buscarProjeto().then((value) => _projectList =value);
   }
 
   @override
@@ -38,6 +40,36 @@ class _PontoScreenState extends State<PontoScreen> {
                   //mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Container(
+                       margin:const EdgeInsets.only(left: 30, right: 20),
+                       decoration: BoxDecoration(
+                        color: Cor.textoBotaoAzul(),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(10),
+                          ),
+                      ),
+                      child: Row(crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('Projeto:',style: TextStyle(fontSize: 20,)),
+                          DropdownButton<String>(                      
+                            padding: const EdgeInsets.fromLTRB(100, 5,40, 5),
+                            value: _projetoId,
+                            onChanged: (value) {
+                              setState(() {
+                                _projetoId =value;
+                              });
+                            },
+                            items: _projectList.map((project) {
+                              return DropdownMenuItem<String>(
+                                value: project.id,
+                                child: Text(project.nome),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
+                    ),
                     StreamBuilder<List<Ponto>>(
                       stream: _ctrlPonto.timeHistoryStream,
                       initialData: const [],
@@ -61,7 +93,7 @@ class _PontoScreenState extends State<PontoScreen> {
                                   const Center(child: Text('Histórico',style: TextStyle(fontSize: 20,),)),
                                   SizedBox(
                                     width: width *0.90,
-                                    height: height *0.60,
+                                    height: height *0.50,
                                     child: ListView.builder(
                                       itemCount: timeHistory.length,
                                       itemBuilder: (context, index) {
@@ -102,14 +134,12 @@ class _PontoScreenState extends State<PontoScreen> {
             right: 10,
             child: BotaoRodape(
               onPressed: () {
-                _timerLogic.startStopTimer();
-                _ctrlPonto.startStopTimer();
+                _ctrlPonto.startStopTimer(_projetoId);
               },
               child: StreamBuilder<bool>(
-                stream: _timerLogic.isRunningStream,
+                stream: _ctrlPonto.isRunningStream,
                 initialData: false,
                 builder: (context, snapshot) {
-                  //return Icon(snapshot.data == true ? Icons.pause : Icons.play_arrow);
                   return Text(
                     snapshot.data == true ? 'Pausar' : 'Iniciar',
                     style: TextStyle(color: Cor.textoBotaoCinza()),

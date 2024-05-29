@@ -47,6 +47,6 @@ class Despesa {
     categoria = map['categoria'];
     descricao = map['descricao'];
     valor = map['valor'];
-    //urlImage = map['urlImage'];
+    urlImage = map['urlImage'];
     }
     }
