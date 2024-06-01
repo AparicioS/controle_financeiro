@@ -1,22 +1,42 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:controle_financeiro/model/categoria.dart';
 import 'package:controle_financeiro/model/despesa.dart';
-import 'package:controle_financeiro/model/usuario.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class DespesaControl {
+  final User? _currentUser = FirebaseAuth.instance.currentUser;
+
   Future<String>cadastrarDespesa(despesa)  async {
-    if (Usuario().id == null) {
+    if (_currentUser == null) {
       return 'Falha';
     }
     if(despesa.id == 0){
       despesa.id= await getIndex(despesa.projeto);
-    }
+    }    
+    despesa.usuario  = despesa.usuario??_currentUser.uid;
     
     return FirebaseFirestore.instance
         .collection('Projeto')
         .doc(despesa.projeto)
         .collection('despesa')
         .doc(despesa.id.toString())
+        .set(despesa.toMap())
+        .then((value) => 'Sucesso')
+        .catchError((erro) => 'Falha');
+  }
+  Future<String>cadastrarDespesaFromMap(despesaMap)  async {
+    if (_currentUser == null) {
+      return 'Falha';
+    }
+    Despesa despesa = Despesa.fromMap(despesaMap);
+    //String id =  await getIndex(despesa.projeto);
+    
+    return FirebaseFirestore.instance
+        .collection('Projeto')
+        .doc(despesa.projeto)
+        .collection('despesa')
+        .doc()
         .set(despesa.toMap())
         .then((value) => 'Sucesso')
         .catchError((erro) => 'Falha');
@@ -44,7 +64,7 @@ class DespesaControl {
     return despesas;
   }  
 
-  Future<int>getIndex(String projeto) async {
+  Future<String>getIndex(String projeto) async {
     int idx = 0;
     await FirebaseFirestore.instance.collection('Projeto')
         .doc(projeto)
@@ -53,7 +73,7 @@ class DespesaControl {
             return idx = res.count! +1;
           },
     );    
-    return idx;
+    return idx.toString();
   }
   
 }
@@ -87,4 +107,11 @@ Future<int> getIndex(String projeto)  async{
       return idx;
     }).asStream();
     return idx;
+}  
+
+Future<String> uploadImagem(ref,imageFile) async{
+    final FirebaseStorage storage = FirebaseStorage.instance;
+            String nome = imageFile.path.split('/').last;
+            await storage.ref(ref).child(nome).putFile(imageFile); 
+    return nome;
 }  

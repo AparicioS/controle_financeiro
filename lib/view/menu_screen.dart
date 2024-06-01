@@ -1,9 +1,9 @@
 
 import 'package:controle_financeiro/control/auth_control.dart';
-import 'package:controle_financeiro/model/usuario.dart';
 import 'package:controle_financeiro/view/despesa_screen.dart';
 import 'package:controle_financeiro/view/layout.dart';
 import 'package:controle_financeiro/view/ponto_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -15,6 +15,7 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
+  final User? _currentUser = FirebaseAuth.instance.currentUser;
   @override
   Widget build(BuildContext context) {
     late double width = MediaQuery.of(context).size.width;
@@ -28,9 +29,9 @@ class _MenuScreenState extends State<MenuScreen> {
         child: Scaffold(
           drawer: Drawer(width: width*0.6, child: ListView(children: [
             UserAccountsDrawerHeader(
-              currentAccountPicture: CircleAvatar(child: Image.asset('assets/logo.png',height: 80,)),
-              accountName: Text(Usuario().nome.toString()), 
-              accountEmail: Text(Usuario().email.toString()),decoration: BoxDecoration(color: Cor.botaoCinza()),) ,
+              currentAccountPicture: CircleAvatar(child:_currentUser!.photoURL !=null? Image.network(_currentUser.photoURL!,height: 80,):Image.asset('assets/logo.png',height: 80,)),
+              accountName: Text(_currentUser.displayName.toString()), 
+              accountEmail: Text(_currentUser.email.toString()),decoration: BoxDecoration(color: Cor.botaoCinza()),) ,
             ListTile(leading:const Icon(Icons.logout),title: const Text('sair'),dense: true, onTap:() =>  AuthControl().sair(),)
             ],),
           ),

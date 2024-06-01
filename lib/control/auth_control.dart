@@ -42,9 +42,6 @@ class AuthControl  {
   }
 
   Future<void> sair() async{
-      // ignore: avoid_print
-      print(Usuario().toString());
-    Usuario().resetUsuario();
     return _firebaseAuth.signOut();
   }  
 

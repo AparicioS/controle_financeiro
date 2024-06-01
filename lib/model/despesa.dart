@@ -1,16 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:controle_financeiro/model/usuario.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 class Despesa {
   late int id = 0;
-  late String? usuario = Usuario().id;
+  late String usuario;
   late String projeto;
   late String categoria;
   late String? descricao;
   late String valor;
-  late String? urlImage;
+  late String image;
+  late String data;
 
-  Despesa(this.id, this.usuario, this.projeto,this.categoria,this.descricao, this.valor);
+  Despesa(this.id, this.usuario, this.projeto,this.categoria,this.image, this.valor);
 
   Despesa.novo();
   
@@ -21,7 +23,8 @@ class Despesa {
     map['categoria'] = categoria;
     map['descricao'] = descricao;
     map['valor'] = valor;
-    map['urlImage'] = urlImage;
+    map['image'] = image;
+    map['data'] = data;
 
     return map;
   }
@@ -36,17 +39,20 @@ class Despesa {
       categoria = map['categoria'];
       descricao = map['descricao'];
       valor = map['valor'];
-      urlImage = map['urlImage'];
+      image = map['image'];
+      data = map['data'];
     }
   }
 
   Despesa.fromMap(Map<String, dynamic> map) {
-    id = int.parse(map['id']);
-    usuario = map['usuario'];
+    id = int.parse(map['id']??'0');
+    usuario = map['usuario']??FirebaseAuth.instance.currentUser?.uid;
     projeto = map['projeto'];
     categoria = map['categoria'];
     descricao = map['descricao'];
     valor = map['valor'];
-    urlImage = map['urlImage'];
-    }
-    }
+    image = map['image'];
+    data = map['data']?? DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
+  }
+
+}

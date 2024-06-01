@@ -1,42 +1,96 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:controle_financeiro/model/ponto.dart';
-import 'package:controle_financeiro/model/projeto.dart';
-import 'package:controle_financeiro/model/usuario.dart';
+import 'package:controle_financeiro/view/layout.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PontoControl {
-  late final List<Ponto> _historico = [];
+  final List<Ponto> _historico = [];
+  final User? _currentUser = FirebaseAuth.instance.currentUser;
   bool _isRunning = false;
+  bool _isDeslocamento = false;
+  String _botaoPonto = 'Deslocamento';
+  String _botaoStart = '';
+  late String _projetoId;
 
   static final _timeHistoryController = StreamController<List<Ponto>>.broadcast();
   static final _totalController = StreamController<String>.broadcast();
+  static final _botaoPontoController = StreamController<String>.broadcast();
+  static final _botaoStartController = StreamController<String>.broadcast();
   static final _isRunningController = StreamController<bool>.broadcast();
 
   Stream<List<Ponto>> get timeHistoryStream => _timeHistoryController.stream;
   Stream<String> get totalStream => _totalController.stream;
+  Stream<String> get botaoPontoStream => _botaoPontoController.stream;
+  Stream<String> get botaoStartStream => _botaoStartController.stream;
   Stream<bool> get isRunningStream => _isRunningController.stream;
 
-  String getSaldoTotal(){
-    var total='';
-    return total;
+  // String getSaldoTotal(){
+  //   var total='';
+  //   return total;
+  // }
+
+  void setDeslocamento(context) {
+    Ponto ponto = getPonto();
+    if(ponto.isStart()){
+      printSnackBar(context: context, texto: 'Finalise a atividade antes de alterar para $_botaoPonto');
+    }else{
+      if(_botaoPonto != 'Ponto'){
+        _botaoPonto = 'Ponto';
+        _botaoStart = 'Sair';
+        _isDeslocamento = true;
+      }else{
+        _botaoPonto = 'Deslocamento';
+        _botaoStart = 'Iniciar';
+        _isDeslocamento = false;
+      }
+    _botaoPontoController.add(_botaoPonto);
+    _botaoStartController.add(_botaoStart);
+    }
   }
 
   void startStopTimer(String? projetoId) {
-    Ponto ponto = getPonto();
-    if(ponto.isStart()){
-      ponto.setSaida();
-    }else{      
-      ponto.setEntrada();
-      _historico.add(ponto);
-    } 
-    _totalController.add(getTotal());
-    _timeHistoryController.add(_historico);
-    
-    _isRunning = !_isRunning;
-    _isRunningController.add(_isRunning);
+    if (_currentUser != null) {
+      Ponto ponto = getPonto();
+      if(ponto.isStart()){
+        ponto.setSaida();
+      }else{
+        ponto.id='';      
+        ponto.usuario  = _currentUser.uid;
+        ponto.setEntrada();
+        ponto.projeto = projetoId!;
+        _historico.add(ponto);
+      } 
+      cadastrarPonto(ponto);
+      _totalController.add(getTotal());
+      _timeHistoryController.add(_historico);
+
+      _isRunning = !_isRunning;
+      _isRunningController.add(_isRunning);
+      _setTextoBtnStart();
+    }    
   }
   
+  _setTextoBtnStart(){    
+    if(_botaoPonto != 'Ponto'){
+      _botaoStart = _isRunning?'Parar':'Iniciar';
+    }else{
+      _botaoStart = _isRunning?'Chegar':'Sair';
+    } 
+    _botaoStartController.add(_botaoStart);   
+  }
+
+  Future<bool> setProjeto(String? value) async {
+    if(getPonto().isStart()){
+      return false;
+    }else if(value !=null){
+      _projetoId = value;
+      await buscarPonto();
+      _timeHistoryController.add(_historico);
+    }
+    return true;
+  }
+
   String getTotal(){  
   late Duration  total = const Duration(hours: 0, minutes: 0, seconds: 0);
     for (Ponto item in _historico) {      
@@ -51,33 +105,57 @@ class PontoControl {
         return item;
       }
     }
-    return Ponto.novo();    
+    Ponto novo =Ponto.novo();
+    novo.isDeslocamento = _isDeslocamento;
+    return novo;    
   }
-  static cadastrarPonto(Ponto ponto) {
+
+  /* metodos de comunicação com FirebaseFirestore */
+
+  cadastrarPonto(Ponto ponto) {
     // ignore: unnecessary_null_comparison
-    if (Usuario().id == null) {
+    if (_currentUser == null) {
       return 'Falha ';
     }
-    return FirebaseFirestore.instance
+    if(ponto.id.isEmpty){
+      return FirebaseFirestore.instance
+        .collection('Projeto')
+        .doc(ponto.projeto)
         .collection('Ponto')
-        .doc(Usuario().id)
-        .collection(Projeto().id)
+        .add(ponto.toMap())
+        .then((value) {
+          ponto.id = value.id;
+          return 'Sucesso ';
+        })
+        .catchError((erro) => 'Falha ');
+    }    
+    return FirebaseFirestore.instance
+        .collection('Projeto')
+        .doc(ponto.projeto)
+        .collection('Ponto')
         .doc(ponto.id)
         .set(ponto.toMap())
-        .then((value) => 'Sucesso ')
+        .then((value) {
+          return 'Sucesso ';
+        })
         .catchError((erro) => 'Falha ');
   }
 
-  static Future<List<Ponto>> buscarPonto() async {
-    List<Ponto> listPonto = [];
+  Future<List<Ponto>> buscarPonto() async {
+    _historico.clear();
     await FirebaseFirestore.instance
+        .collection('Projeto')
+        .doc(_projetoId)
         .collection('Ponto')
-        .doc(Usuario().id)
-        .collection(Projeto().id)
+        .where("usuario", isEqualTo: _currentUser?.uid.toString())
         .get()
         .then((value) {
-      listPonto.addAll(value.docs.map((doc) => Ponto.fromDoc(doc)).toList());
+          return _historico.addAll(value.docs.map((doc) {
+            return Ponto.fromDoc(doc);
+          }).toList());
+    // ignore: invalid_return_type_for_catch_error, avoid_print
+    }).catchError((erro) {
     });
-    return listPonto;
+    return _historico;
   }
 }

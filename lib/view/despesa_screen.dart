@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:controle_financeiro/control/despesa_control.dart';
 import 'package:controle_financeiro/control/projeto_control.dart';
 import 'package:controle_financeiro/model/categoria.dart';
-import 'package:controle_financeiro/model/despesa.dart';
 import 'package:controle_financeiro/model/projeto.dart';
 import 'package:controle_financeiro/view/layout.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -23,20 +22,17 @@ class _DespesaScreenState extends State<DespesaScreen> {
   final _FormKey = GlobalKey<FormState>();
   final TextEditingController _ctrlDescricao = TextEditingController();
   final TextEditingController _ctrlValor = TextEditingController();
-  late Despesa _despesa;
+  late final Map<String, dynamic> _despesaMap = <String, dynamic>{};
   // ignore: avoid_init_to_null
   late File? _imageFile = null;
   bool _isProgress = false;
   static List<Projeto> _projectList =[];
   static List<Categoria> _categoryList=[];
-  final FirebaseStorage _storage = FirebaseStorage.instance;
 
   @override
   void initState() {
-    _despesa = Despesa.novo();
     buscarProjeto().then((value) => _projectList =value);
-    buscarCategoria().then((value) => _categoryList = value);
-    
+    buscarCategoria().then((value) => _categoryList = value);    
     super.initState();
   }
 
@@ -52,29 +48,26 @@ class _DespesaScreenState extends State<DespesaScreen> {
   }
 
   String? _validaDescricao() {
-    return _despesa.categoria != '0' ? null:'Descrição obrigatoria para categoria Outros';   
+    return _despesaMap['categoria'] != '0' ? null:'Descrição obrigatoria para categoria Outros';   
   }
   
   Future<void> _submitData() async {
     if(_FormKey.currentState!.validate()){
       setState(() => _isProgress = true);
-        _FormKey.currentState!.save();
-        _despesa.valor = _ctrlValor.text;
-        _despesa.descricao = _ctrlDescricao.text;
+        _despesaMap['valor'] = _ctrlValor.text;
+        _despesaMap['descricao'] = _ctrlDescricao.text;
       if (_imageFile != null) {
         try {
-            String ref = _projectList.firstWhere((element) => element.id ==_despesa.projeto,).nome;
-            String nome = '${_imageFile.hashCode}.jpg';
-            await _storage.ref(ref).child(nome).putFile(_imageFile!);
-            final imageUrl = await _storage.ref(ref).child(nome).getDownloadURL();      
-            DespesaControl().cadastrarDespesa(_despesa).then((value) {
-              _despesa = Despesa.novo();
+            String ref = _projectList.firstWhere((element) => element.id ==_despesaMap['projeto'],).nome;
+            _despesaMap['image'] = await uploadImagem(ref,_imageFile);
+            DespesaControl().cadastrarDespesaFromMap(_despesaMap).then((value) {
               _FormKey.currentState!.reset();
               _ctrlDescricao.clear();
               _ctrlValor.clear();
+              _imageFile = null;
+              _despesaMap.clear();
               setState(() => _isProgress = false);
             });
-            _despesa.urlImage = imageUrl;
         //_despesa.urlImage ='$ref/$nome';
         } on FirebaseException  {
           setState(() => _isProgress = false);
@@ -97,9 +90,9 @@ class _DespesaScreenState extends State<DespesaScreen> {
             children: [
               DropdownButtonFormField<String>(
                 validator: (value) => value == null ?'selecione um Projeto':null,
-                onSaved: (value) {
+                onChanged: (value) {
                   setState(() {
-                    _despesa.projeto = value!;
+                    _despesaMap['projeto'] = value;
                   });
                 },
                 items: _projectList.map((project) {
@@ -108,14 +101,14 @@ class _DespesaScreenState extends State<DespesaScreen> {
                     child: Text(project.nome),
                   );
                 }).toList(),
-                decoration: getInputDecoration('Projeto'), onChanged: (String? value) {  },
+                decoration: getInputDecoration('Projeto'), 
               ),
               SizedBox(height: height*0.01),
               DropdownButtonFormField<String>(
                 validator: (value) => value == null ?'selecione uma Categoria':null,
                 onChanged: (value) {
                   setState(() {
-                    _despesa.categoria = value!;
+                    _despesaMap['categoria'] = value;
                   });
                 },
                 items: _categoryList.map((category) {
@@ -140,7 +133,7 @@ class _DespesaScreenState extends State<DespesaScreen> {
               ),
               SizedBox(height: height*0.05),
               SizedBox(height:height*0.3 ,
-                child: _imageFile ==null ?TextFormField(enabled: false,
+                child: _imageFile == null ? TextFormField(enabled: false,
                 validator: (value) => value!.isEmpty ?'envie uma imagem do comprovante':null,
                 decoration: const InputDecoration(hintText: 'Comprovate',),) 
                 :Image.file(_imageFile!,height: height*0.3,)),
@@ -157,7 +150,7 @@ class _DespesaScreenState extends State<DespesaScreen> {
                     ),
                   ),
                   SizedBox(
-                    width: width * 0.15,
+                    width: width * 0.2,
                   ),
                   BotaoRodape(
                     onPressed: _submitData,

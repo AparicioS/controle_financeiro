@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
 class Ponto {
   late String id;
   late String projeto;
-  late String usuario;
-  late String? entrada = '';
-  late String? saida = '';
+  late String usuario =  FirebaseAuth.instance.currentUser!.uid;
+  late String? inicio = '';
+  late String? fim = '';
+  late bool isDeslocamento = false;
 
   Ponto.novo();
 
@@ -14,15 +16,16 @@ class Ponto {
       {required this.id,
       required this.projeto,
       required this.usuario,
-      this.entrada,
-      this.saida});
+      this.inicio,
+      this.fim});
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{};
     map['projeto'] = projeto;
     map['usuario'] = usuario;
-    map['entrada'] = entrada;
-    map['saida'] = saida;
+    map['inicio'] = inicio;
+    map['fim'] = fim;
+    map['isDeslocamento'] = isDeslocamento;
     return map;
   }
 
@@ -33,36 +36,38 @@ class Ponto {
       id = doc.id;
       projeto = map['projeto'];
       usuario = map['usuario'];
-      entrada = map['entrada'];
-      saida = map['saida'];
+      inicio = map['inicio'];
+      fim = map['fim'];
+      isDeslocamento = map['isDeslocamento'];
     }
   }
 
   Ponto.fromMap(Map<String, dynamic> map) {
     projeto = map['projeto'];
     usuario = map['usuario'];
-    entrada = map['entrada'];
-    saida = map['saida'];
+    inicio = map['inicio'];
+    fim = map['fim'];
+    isDeslocamento = map['isDeslocamento'];
   }
 
   setEntrada() {
-    entrada = DateFormat('dd/MM HH:mm').format(DateTime.now());
+    inicio = DateFormat('dd/MM HH:mm').format(DateTime.now());
   }
 
   setSaida() {
-    saida = DateFormat('dd/MM HH:mm').format(DateTime.now());
+    fim = DateFormat('dd/MM HH:mm').format(DateTime.now());
   }
 
   bool isStart() {
-    return (entrada!.isNotEmpty && saida!.isEmpty);
+    return (inicio!.isNotEmpty && fim!.isEmpty);
   }
 
   DateTime getEntrada() {
-    return DateFormat('dd/MM HH:mm').parse(entrada!);
+    return DateFormat('dd/MM HH:mm').parse(inicio!);
   }
 
   DateTime getSaida() {
-    return DateFormat('dd/MM HH:mm').parse(saida!);
+    return DateFormat('dd/MM HH:mm').parse(fim!);
   }
 
   Duration getDuracao() {
@@ -76,10 +81,10 @@ class Ponto {
   }
 
   getPonto() {
-    if(saida!.isEmpty){
-      return entrada;
+    if(fim!.isEmpty){
+      return inicio;
     }
-    return '$entrada - $saida   saldo:${getDuracaoToString()} h';
+    return '$inicio - $fim   saldo:${getDuracaoToString()} h';
   }
 
   String formatDuration(String duration) {    

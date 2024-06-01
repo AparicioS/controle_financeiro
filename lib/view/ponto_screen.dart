@@ -17,6 +17,7 @@ class _PontoScreenState extends State<PontoScreen> {
   late PontoControl _ctrlPonto;
   static List<Projeto> _projectList =[];
   late String? _projetoId = '1';
+  late String? _projeto = '';
 
   @override
   void initState() {
@@ -48,24 +49,55 @@ class _PontoScreenState extends State<PontoScreen> {
                           Radius.circular(10),
                           ),
                       ),
-                      child: Row(crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text('Projeto:',style: TextStyle(fontSize: 20,)),
-                          DropdownButton<String>(                      
-                            padding: const EdgeInsets.fromLTRB(100, 5,40, 5),
-                            value: _projetoId,
-                            onChanged: (value) {
-                              setState(() {
-                                _projetoId =value;
-                              });
-                            },
-                            items: _projectList.map((project) {
-                              return DropdownMenuItem<String>(
-                                value: project.id,
-                                child: Text(project.nome),
-                              );
-                            }).toList(),
+                          Expanded(
+                            child: Stack(
+                              children: [
+                                Container( 
+                                  width: width*0.9,
+                                    height: height*0.06,                               
+                                  padding: const EdgeInsets.fromLTRB(20, 5,20, 5),
+                                  child: Center(
+                                    child: Text('Projeto: $_projeto',style: const TextStyle(fontSize: 20,),
+                                    textAlign: TextAlign.right,)),
+                                ),
+                                Positioned(
+                                  right: 0,
+                                  top: 1,
+                                  child: Container(
+                                    width: width*0.50,
+                                    height: height*0.065,
+                                    padding: const EdgeInsets.fromLTRB(20, 5,20, 5),
+                                    child: DropdownButton<String>(
+                                      dropdownColor: Cor.backgrud(),
+                                      underline: const Icon(Icons.autorenew_sharp),
+                                      // icon: const Visibility (visible:false, child: Icon(Icons.arrow_downward)),    
+                                      iconSize: 0.0,          
+                                      padding: const EdgeInsets.fromLTRB(100, 5,5, 5),
+                                      onChanged: (value) {
+                                        _ctrlPonto.setProjeto(value!).then((e) {
+                                          if(e){
+                                            setState(() {
+                                              _projetoId =value;
+                                              _projeto = _projectList.firstWhere((element) => element.id == _projetoId,).nome;
+                                            });
+                                          }
+                                        });
+                                      },
+                                      items: _projectList.map((project) {
+                                        return DropdownMenuItem<String>(
+                                          value: project.id,
+                                          child: Text(project.nome),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -98,7 +130,7 @@ class _PontoScreenState extends State<PontoScreen> {
                                       itemCount: timeHistory.length,
                                       itemBuilder: (context, index) {
                                         return Text(
-                                            timeHistory[index].getPonto());
+                                            timeHistory[index].getPonto(),style: TextStyle(color:timeHistory[index].isDeslocamento ?Cor.erro():Cor.texto() ),);
                                       },
                                     ),
                                   ),
@@ -117,7 +149,7 @@ class _PontoScreenState extends State<PontoScreen> {
                                       Radius.circular(10),
                                     ),
                                   ),
-                                  child: Center(child: Text('Saldo total:${_ctrlPonto.getTotal()}'))),
+                                  child: Center(child: Text('Horas trabalhadas:${_ctrlPonto.getTotal()} - Horas Pagas:${_ctrlPonto.getTotal()} - Saldo:${_ctrlPonto.getTotal()}'))),
                             ),
                           ],
                         );
@@ -130,22 +162,46 @@ class _PontoScreenState extends State<PontoScreen> {
           ),
           Positioned(
             bottom: 10,
-            left: 10,
-            right: 10,
-            child: BotaoRodape(
-              onPressed: () {
-                _ctrlPonto.startStopTimer(_projetoId);
-              },
-              child: StreamBuilder<bool>(
-                stream: _ctrlPonto.isRunningStream,
-                initialData: false,
-                builder: (context, snapshot) {
-                  return Text(
-                    snapshot.data == true ? 'Pausar' : 'Iniciar',
-                    style: TextStyle(color: Cor.textoBotaoCinza()),
-                  );
-                },
-              ),
+            left: 20,
+            child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                BotaoRodape(
+                    width: width * 0.30,
+                  onPressed: () {
+                    _ctrlPonto.setDeslocamento(context);
+                  },
+                  child: StreamBuilder<String>(
+                    stream: _ctrlPonto.botaoPontoStream,
+                    initialData: 'Deslocamento',
+                    builder: (context, snapshot) {
+                      return Text(
+                        snapshot.data.toString(),
+                        style: TextStyle(color: Cor.textoBotaoCinza()),
+                      );
+                    },
+                  ),
+                ),
+                  SizedBox(
+                    width: width * 0.20,
+                  ),
+                BotaoRodape(
+                    width: width * 0.30,
+                  onPressed: () {
+                    _ctrlPonto.startStopTimer(_projetoId);
+                  },
+                  child: StreamBuilder<String>(
+                    stream: _ctrlPonto.botaoStartStream,
+                    initialData:  'Iniciar',
+                    builder: (context, snapshot) {
+                      return Text(
+                        snapshot.data.toString(),
+                        style: TextStyle(color: Cor.textoBotaoCinza()),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ],
