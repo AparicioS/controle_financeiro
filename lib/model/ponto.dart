@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
 class Ponto {
-  late String id;
+  late String id = DateFormat('yyyyMMddHHmm').format(DateTime.now());
   late String projeto;
   late String usuario =  FirebaseAuth.instance.currentUser!.uid;
   late String? inicio = '';
@@ -76,6 +76,7 @@ class Ponto {
     }
     return getSaida().difference(getEntrada());
   }
+  
   String getDuracaoToString() {
     return formatDuration(getDuracao().toString());
   }

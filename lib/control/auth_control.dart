@@ -1,4 +1,5 @@
 library firebase_auth_utility;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:controle_financeiro/model/usuario.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -6,6 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthControl  {  
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  bool isOnline = true;
 
   Future<String?> cadastrarEmail({required String nome,required String email,required String senha}) async{
     try {
@@ -43,6 +45,12 @@ class AuthControl  {
 
   Future<void> sair() async{
     return _firebaseAuth.signOut();
+  }  
+  Future<bool> disableNetwork() async{
+    if(!isOnline){
+      return FirebaseFirestore.instance.enableNetwork().then((value) => true);
+    }
+    return FirebaseFirestore.instance.disableNetwork().then((value) => false);
   }  
 
 }

@@ -12,6 +12,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool isPossuiCadastro = true;
+  bool isVisibilityS= false;
+  bool isVisibilityCS= false;
   // ignore: non_constant_identifier_names
   final _FormKey = GlobalKey<FormState>();
   final TextEditingController _ctrlNome = TextEditingController();
@@ -40,9 +42,31 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 16),
               TextFormField(controller: _ctrlEmail ,decoration: getInputDecoration('Email'),validator:(String? value) => value!.isNotEmpty? null :'campo obrigatorio',),
               const SizedBox(height: 16),
-              TextFormField(controller: _ctrlSenha ,decoration: getInputDecoration('Senha:'),obscureText: true,validator: (String? value) => value!.isNotEmpty? null :'campo obrigatorio',),
+              TextFormField(controller: _ctrlSenha ,decoration: InputDecoration(
+                  hintText: 'Senha:',
+                  fillColor: Cor.textoBotaoAzul(),
+                  filled: true,
+                  suffixIcon: IconButton( 
+                    onPressed: () {
+                      setState(() {
+                        isVisibilityS = !isVisibilityS;
+                      });
+                    },
+                    icon:Icon( isVisibilityS ? Icons.visibility_outlined : Icons.visibility_off_outlined)),
+                ),obscureText: !isVisibilityS,validator: (String? value) => value!.isNotEmpty? null :'campo obrigatorio',),
               const SizedBox(height: 16),
-              Visibility(visible:!isPossuiCadastro, child:TextFormField(decoration: getInputDecoration('Confirmar senha:'),obscureText: true,validator: (String? value) => value!.isNotEmpty? _validaSenha(value) :'campo obrigatorio'),),
+              Visibility(visible:!isPossuiCadastro, child:TextFormField(decoration:InputDecoration(
+                  hintText: 'Confirmar senha:',
+                  fillColor: Cor.textoBotaoAzul(),
+                  filled: true,
+                  suffixIcon: IconButton( 
+                    onPressed: () {
+                      setState(() {
+                        isVisibilityCS = !isVisibilityCS;
+                      });
+                    },
+                    icon:Icon( isVisibilityCS ? Icons.visibility_outlined : Icons.visibility_off_outlined)),
+                ),obscureText: !isVisibilityCS,validator: (String? value) => value!.isNotEmpty? _validaSenha(value) :'campo obrigatorio'),),
               const SizedBox(height: 16),
               BotaoRodape(onPressed:isPossuiCadastro ? _entrar :_cadastrar,
                           child: Text(isPossuiCadastro ?'Entrar':'Cadastrar',style: TextStyle(color: Cor.textoBotaoAzul())),

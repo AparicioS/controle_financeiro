@@ -15,7 +15,8 @@ class PontoScreen extends StatefulWidget {
 
 class _PontoScreenState extends State<PontoScreen> {
   late PontoControl _ctrlPonto;
-  static List<Projeto> _projectList =[];
+  late ProjetoControl _ctrlProjeto;
+  // static List<Projeto> _projectList =[];
   late String? _projetoId = '1';
   late String? _projeto = '';
 
@@ -23,7 +24,9 @@ class _PontoScreenState extends State<PontoScreen> {
   void initState() {
     super.initState();
     _ctrlPonto = PontoControl();
-    buscarProjeto().then((value) => _projectList =value);
+    _ctrlProjeto = ProjetoControl();
+    _ctrlProjeto.setProjetos();
+    // buscarProjeto().then((value) => _projectList =value);
   }
 
   @override
@@ -42,7 +45,7 @@ class _PontoScreenState extends State<PontoScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                       margin:const EdgeInsets.only(left: 30, right: 20),
+                       margin:const EdgeInsets.only(left: 30, right: 20 ,top: 5),
                        decoration: BoxDecoration(
                         color: Cor.textoBotaoAzul(),
                         borderRadius: const BorderRadius.all(
@@ -66,33 +69,40 @@ class _PontoScreenState extends State<PontoScreen> {
                                 ),
                                 Positioned(
                                   right: 0,
-                                  top: 1,
+                                  top: 2,
                                   child: Container(
                                     width: width*0.50,
                                     height: height*0.065,
-                                    padding: const EdgeInsets.fromLTRB(20, 5,20, 5),
-                                    child: DropdownButton<String>(
-                                      dropdownColor: Cor.backgrud(),
-                                      underline: const Icon(Icons.autorenew_sharp),
-                                      // icon: const Visibility (visible:false, child: Icon(Icons.arrow_downward)),    
-                                      iconSize: 0.0,          
-                                      padding: const EdgeInsets.fromLTRB(100, 5,5, 5),
-                                      onChanged: (value) {
-                                        _ctrlPonto.setProjeto(value!).then((e) {
-                                          if(e){
-                                            setState(() {
-                                              _projetoId =value;
-                                              _projeto = _projectList.firstWhere((element) => element.id == _projetoId,).nome;
+                                    padding: const EdgeInsets.fromLTRB(30, 0,5, 0),
+                                    child: StreamBuilder<List<Projeto>>(
+                                      stream: _ctrlProjeto.projetoStream,
+                                      builder: (context, snapshot) {
+                                        final List<Projeto> projectList = snapshot.data??[];
+                                        return DropdownButton<String>(
+                                          dropdownColor: Cor.backgrud(),
+                                          underline: const Icon(Icons.autorenew_sharp),   
+                                          iconSize: 0.0,          
+                                          padding: const EdgeInsets.fromLTRB(100, 5,5, 5),
+                                          onChanged: (value) {
+                                            _ctrlPonto.setProjeto(value!).then((e) {
+                                              if(e){
+                                                setState(() {
+                                                  _projetoId =value;
+                                                  _projeto = projectList.firstWhere((element) => element.id == _projetoId,).nome;
+                                                });
+                                              }else{
+                                                 printSnackBar(context: context, texto: 'Finalise a atividade antes de alterar o projeto');
+                                              }
                                             });
-                                          }
-                                        });
-                                      },
-                                      items: _projectList.map((project) {
-                                        return DropdownMenuItem<String>(
-                                          value: project.id,
-                                          child: Text(project.nome),
+                                          },
+                                          items: projectList.map((project) {
+                                            return DropdownMenuItem<String>(
+                                              value: project.id,
+                                              child: Text(project.nome),
+                                            );
+                                          }).toList(),
                                         );
-                                      }).toList(),
+                                      }
                                     ),
                                   ),
                                 ),
@@ -106,7 +116,7 @@ class _PontoScreenState extends State<PontoScreen> {
                       stream: _ctrlPonto.timeHistoryStream,
                       initialData: const [],
                       builder: (context, snapshot) {
-                        final List<Ponto> timeHistory = snapshot.data!;
+                        final List<Ponto> timeHistory = snapshot.data??[];
                         return Column(
                           children: [
                             Container(
@@ -129,8 +139,12 @@ class _PontoScreenState extends State<PontoScreen> {
                                     child: ListView.builder(
                                       itemCount: timeHistory.length,
                                       itemBuilder: (context, index) {
-                                        return Text(
-                                            timeHistory[index].getPonto(),style: TextStyle(color:timeHistory[index].isDeslocamento ?Cor.erro():Cor.texto() ),);
+                                        return Row(
+                                          children: [
+                                            timeHistory[index].isDeslocamento ? const Icon(Icons.airplanemode_on):const Icon(Icons.assignment_ind),
+                                            Text(timeHistory[index].getPonto(),),
+                                          ],
+                                        );
                                       },
                                     ),
                                   ),
@@ -149,7 +163,13 @@ class _PontoScreenState extends State<PontoScreen> {
                                       Radius.circular(10),
                                     ),
                                   ),
-                                  child: Center(child: Text('Horas trabalhadas:${_ctrlPonto.getTotal()} - Horas Pagas:${_ctrlPonto.getTotal()} - Saldo:${_ctrlPonto.getTotal()}'))),
+                                  child: Center(child: Row(
+                                    children: [
+                                      Text('Horas Trabalhadas: ${_ctrlPonto.getTotal()}',style: TextStyle(color:Cor.sucesso())),
+                                      Text(' - Pagas: ${_ctrlPonto.getHorasPagas()}'),
+                                      Text(' - Saldo: ${_ctrlPonto.getSalodo()}',style: TextStyle(color:(_ctrlPonto.getSalodo().contains('-')) ?Cor.erro():Cor.sucesso())),
+                                    ],
+                                  ))),
                             ),
                           ],
                         );

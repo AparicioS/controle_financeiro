@@ -26,11 +26,14 @@ class _DespesaScreenState extends State<DespesaScreen> {
   // ignore: avoid_init_to_null
   late File? _imageFile = null;
   bool _isProgress = false;
+  // late ProjetoControl _ctrlProjeto;
+
   static List<Projeto> _projectList =[];
   static List<Categoria> _categoryList=[];
 
   @override
   void initState() {
+    // _ctrlProjeto = ProjetoControl();
     buscarProjeto().then((value) => _projectList =value);
     buscarCategoria().then((value) => _categoryList = value);    
     super.initState();
@@ -58,7 +61,7 @@ class _DespesaScreenState extends State<DespesaScreen> {
         _despesaMap['descricao'] = _ctrlDescricao.text;
       if (_imageFile != null) {
         try {
-            String ref = _projectList.firstWhere((element) => element.id ==_despesaMap['projeto'],).nome;
+            String ref =  _projectList.firstWhere((element) => element.id ==_despesaMap['projeto'],).nome;
             _despesaMap['image'] = await uploadImagem(ref,_imageFile);
             DespesaControl().cadastrarDespesaFromMap(_despesaMap).then((value) {
               _FormKey.currentState!.reset();
