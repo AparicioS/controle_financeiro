@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:controle_financeiro/model/ponto.dart';
 import 'package:controle_financeiro/view/layout.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart';
 
 class PontoControl {
   final List<Ponto> _historico = [];
@@ -53,7 +52,7 @@ class PontoControl {
       if(ponto.isStart()){
         ponto.setSaida();
       }else{
-        ponto.id='';      
+        // ponto.id='';      
         ponto.usuario  = _currentUser.uid;
         ponto.setEntrada();
         ponto.projeto = projetoId!;
@@ -134,9 +133,6 @@ class PontoControl {
     if (_currentUser == null) {
       return 'Falha ';
     }
-    if(ponto.id.isEmpty){
-      ponto.id = DateFormat('yyyyMMddHHmmss').format(DateTime.now());
-    } 
     return FirebaseFirestore.instance
         .collection('Projeto')
         .doc(ponto.projeto)

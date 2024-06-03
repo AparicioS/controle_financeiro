@@ -22,20 +22,21 @@ class _DespesaScreenState extends State<DespesaScreen> {
   final _FormKey = GlobalKey<FormState>();
   final TextEditingController _ctrlDescricao = TextEditingController();
   final TextEditingController _ctrlValor = TextEditingController();
-  late final Map<String, dynamic> _despesaMap = <String, dynamic>{};
+  final Map<String, dynamic> _despesaMap = <String, dynamic>{};
+
+  late String _projeto = '';
   // ignore: avoid_init_to_null
   late File? _imageFile = null;
   bool _isProgress = false;
-  // late ProjetoControl _ctrlProjeto;
-
-  static List<Projeto> _projectList =[];
-  static List<Categoria> _categoryList=[];
+  late ProjetoControl _ctrlProjeto;
+  late DespesaControl _ctrlDespesa;
+  // static List<Categoria> _categoryList=[];
 
   @override
   void initState() {
-    // _ctrlProjeto = ProjetoControl();
-    buscarProjeto().then((value) => _projectList =value);
-    buscarCategoria().then((value) => _categoryList = value);    
+    _ctrlProjeto = ProjetoControl();
+    _ctrlDespesa = DespesaControl();
+    // buscarCategoria().then((value) => _categoryList = value);    
     super.initState();
   }
 
@@ -61,7 +62,7 @@ class _DespesaScreenState extends State<DespesaScreen> {
         _despesaMap['descricao'] = _ctrlDescricao.text;
       if (_imageFile != null) {
         try {
-            String ref =  _projectList.firstWhere((element) => element.id ==_despesaMap['projeto'],).nome;
+            String ref = _projeto;
             _despesaMap['image'] = await uploadImagem(ref,_imageFile);
             DespesaControl().cadastrarDespesaFromMap(_despesaMap).then((value) {
               _FormKey.currentState!.reset();
@@ -91,36 +92,51 @@ class _DespesaScreenState extends State<DespesaScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              DropdownButtonFormField<String>(
-                validator: (value) => value == null ?'selecione um Projeto':null,
-                onChanged: (value) {
-                  setState(() {
-                    _despesaMap['projeto'] = value;
-                  });
-                },
-                items: _projectList.map((project) {
-                  return DropdownMenuItem<String>(
-                    value: project.id,
-                    child: Text(project.nome),
+              StreamBuilder<List<Projeto>>(
+                stream: _ctrlProjeto.projetoStream,
+                builder: (context, snapshot) {
+                  final List<Projeto> projectList = snapshot.data??[];
+                  return DropdownButtonFormField<String>(
+                    validator: (value) => value == null ?'selecione um Projeto':null,
+                    onChanged: (value) {
+                      setState(() {
+                        if(value != null){
+                          _despesaMap['projeto'] = value;
+                          _projeto = projectList.firstWhere((element) => element.id == value,).nome;
+                        }
+                      });
+                    },
+                    items: projectList.map((project) {
+                      return DropdownMenuItem<String>(
+                        value: project.id,
+                        child: Text(project.nome),
+                      );
+                    }).toList(),
+                    decoration: getInputDecoration('Projeto'), 
                   );
-                }).toList(),
-                decoration: getInputDecoration('Projeto'), 
+                }
               ),
               SizedBox(height: height*0.01),
-              DropdownButtonFormField<String>(
-                validator: (value) => value == null ?'selecione uma Categoria':null,
-                onChanged: (value) {
-                  setState(() {
-                    _despesaMap['categoria'] = value;
-                  });
-                },
-                items: _categoryList.map((category) {
-                  return DropdownMenuItem<String>(
-                    value: category.id,
-                    child: Text(category.nome),
+              StreamBuilder<List<Categoria>>(
+                stream: _ctrlDespesa.categoriaStream,
+                builder: (context, snapshot) {
+                  final List<Categoria> categoryList = snapshot.data??[];
+                  return DropdownButtonFormField<String>(
+                    validator: (value) => value == null ?'selecione uma Categoria':null,
+                    onChanged: (value) {
+                      setState(() {
+                        _despesaMap['categoria'] = value;
+                      });
+                    },
+                    items: categoryList.map((category) {
+                      return DropdownMenuItem<String>(
+                        value: category.id,
+                        child: Text(category.nome),
+                      );
+                    }).toList(),
+                    decoration: getInputDecoration('Categoria'),
                   );
-                }).toList(),
-                decoration: getInputDecoration('Categoria'),
+                }
               ),
               SizedBox(height: height * 0.01),
               TextFormField(

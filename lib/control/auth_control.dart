@@ -46,11 +46,12 @@ class AuthControl  {
   Future<void> sair() async{
     return _firebaseAuth.signOut();
   }  
+  /* metodo para controle de conexão para teste de persistencia off-line*/
   Future<bool> disableNetwork() async{
     if(!isOnline){
       return FirebaseFirestore.instance.enableNetwork().then((value) => true);
     }
     return FirebaseFirestore.instance.disableNetwork().then((value) => false);
   }  
-
+/*-------------------------------------------------------------------------------- */
 }

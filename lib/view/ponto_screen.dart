@@ -16,8 +16,7 @@ class PontoScreen extends StatefulWidget {
 class _PontoScreenState extends State<PontoScreen> {
   late PontoControl _ctrlPonto;
   late ProjetoControl _ctrlProjeto;
-  // static List<Projeto> _projectList =[];
-  late String? _projetoId = '1';
+  late String? _projetoId = '';
   late String? _projeto = '';
 
   @override
@@ -25,8 +24,6 @@ class _PontoScreenState extends State<PontoScreen> {
     super.initState();
     _ctrlPonto = PontoControl();
     _ctrlProjeto = ProjetoControl();
-    _ctrlProjeto.setProjetos();
-    // buscarProjeto().then((value) => _projectList =value);
   }
 
   @override
@@ -41,7 +38,6 @@ class _PontoScreenState extends State<PontoScreen> {
             children: [
               Expanded(
                 child: Column(
-                  //mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
@@ -60,8 +56,8 @@ class _PontoScreenState extends State<PontoScreen> {
                             child: Stack(
                               children: [
                                 Container( 
-                                  width: width*0.9,
-                                    height: height*0.06,                               
+                                  width: width*0.8,
+                                  height: height*0.06,                               
                                   padding: const EdgeInsets.fromLTRB(20, 5,20, 5),
                                   child: Center(
                                     child: Text('Projeto: $_projeto',style: const TextStyle(fontSize: 20,),
@@ -69,20 +65,19 @@ class _PontoScreenState extends State<PontoScreen> {
                                 ),
                                 Positioned(
                                   right: 0,
-                                  top: 2,
+                                  top: 0,
                                   child: Container(
-                                    width: width*0.50,
                                     height: height*0.065,
-                                    padding: const EdgeInsets.fromLTRB(30, 0,5, 0),
+                                    padding: EdgeInsets.fromLTRB(0, height*0.00,width*0.01, 0),
                                     child: StreamBuilder<List<Projeto>>(
                                       stream: _ctrlProjeto.projetoStream,
                                       builder: (context, snapshot) {
                                         final List<Projeto> projectList = snapshot.data??[];
                                         return DropdownButton<String>(
                                           dropdownColor: Cor.backgrud(),
-                                          underline: const Icon(Icons.autorenew_sharp),   
-                                          iconSize: 0.0,          
-                                          padding: const EdgeInsets.fromLTRB(100, 5,5, 5),
+                                          underline: const SizedBox(),   
+                                          icon: const Icon(Icons.autorenew_sharp,),   
+                                          iconDisabledColor: Cor.textoBotaoAzul(),
                                           onChanged: (value) {
                                             _ctrlPonto.setProjeto(value!).then((e) {
                                               if(e){
@@ -120,8 +115,7 @@ class _PontoScreenState extends State<PontoScreen> {
                         return Column(
                           children: [
                             Container(
-                              margin:
-                              EdgeInsets.only(left: 30, right: 20,top: height *0.01),
+                              margin: EdgeInsets.only(left: 30, right: 20,top: height *0.01),
                               padding: EdgeInsets.all(height *0.01),
                               decoration: BoxDecoration(
                                 color: Cor.textoBotaoAzul(),
@@ -153,10 +147,10 @@ class _PontoScreenState extends State<PontoScreen> {
                             ),
                             SizedBox(height: height *0.01),
                             SizedBox(
-                              height: height *0.04,
+                              height: height *0.05,
                               child: Container(
-                                  margin:
-                                      const EdgeInsets.only(left: 30, right: 20),
+                                  padding:EdgeInsets.all(width *0.01),
+                                  margin: const EdgeInsets.only(left: 30, right: 20),
                                   decoration: BoxDecoration(
                                     color: Cor.textoBotaoAzul(),
                                     borderRadius: const BorderRadius.all(

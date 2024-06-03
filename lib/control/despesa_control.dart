@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:controle_financeiro/model/categoria.dart';
 import 'package:controle_financeiro/model/despesa.dart';
@@ -6,13 +8,33 @@ import 'package:firebase_storage/firebase_storage.dart';
 
 class DespesaControl {
   final User? _currentUser = FirebaseAuth.instance.currentUser;
+  
+  DespesaControl(){
+    setCategorias();
+  }
+  final List<Categoria> _categoriaList =[];
+  
+  static final _categoriaController = StreamController<List<Categoria>>.broadcast();
+  
+  Stream<List<Categoria>> get categoriaStream => _categoriaController.stream;
+
+  Future<void> setCategorias() async {
+    Categoria otros =Categoria();
+    otros.id = '0' ;
+    otros.nome = 'Outros' ;
+    await FirebaseFirestore.instance.collection('Categoria').get().then((value) {  
+      if(value.size > 0){
+      _categoriaList.addAll(value.docs.map((doc) => Categoria.fromDoc(doc)).toList());
+      _categoriaList.add(otros);
+      _categoriaController.add(_categoriaList);  
+      }    
+    });
+  }
+
 
   Future<String>cadastrarDespesa(despesa)  async {
     if (_currentUser == null) {
       return 'Falha';
-    }
-    if(despesa.id == 0){
-      despesa.id= await getIndex(despesa.projeto);
     }    
     despesa.usuario  = despesa.usuario??_currentUser.uid;
     
@@ -20,7 +42,7 @@ class DespesaControl {
         .collection('Projeto')
         .doc(despesa.projeto)
         .collection('despesa')
-        .doc(despesa.id.toString())
+        .doc()
         .set(despesa.toMap())
         .then((value) => 'Sucesso')
         .catchError((erro) => 'Falha');
@@ -64,50 +86,50 @@ class DespesaControl {
     return despesas;
   }  
 
-  Future<String>getIndex(String projeto) async {
-    int idx = 0;
-    await FirebaseFirestore.instance.collection('Projeto')
-        .doc(projeto)
-        .collection('despesa').count().get().then(
-          (res) {
-            return idx = res.count! +1;
-          },
-    );    
-    return idx.toString();
-  }
+  // Future<String>getIndex(String projeto) async {
+  //   int idx = 0;
+  //   await FirebaseFirestore.instance.collection('Projeto')
+  //       .doc(projeto)
+  //       .collection('despesa').count().get().then(
+  //         (res) {
+  //           return idx = res.count! +1;
+  //         },
+  //   );    
+  //   return idx.toString();
+  // }
   
 }
 
   
-Stream<QuerySnapshot<Map<String, dynamic>>>  buscarCategoriaDinamica() {
-    return FirebaseFirestore.instance.collection('Categoria').snapshots();
-}  
+// Stream<QuerySnapshot<Map<String, dynamic>>>  buscarCategoriaDinamica() {
+//     return FirebaseFirestore.instance.collection('Categoria').snapshots();
+// }  
   
-Future<List<Categoria>> buscarCategoria() async{
-    Categoria otros =Categoria();
-    otros.id = '0' ;
-    otros.nome = 'Outros' ;
-    List<Categoria> categorias = [];
-    categorias.add(otros);
-    // ignore: await_only_futures
-    await FirebaseFirestore.instance.collection('Categoria').get().then((value) {      
-      categorias.addAll(value.docs.map((doc) => Categoria.fromDoc(doc)).toList());
-      return categorias;
-    }).asStream();
-    return categorias;
-}  
+// Future<List<Categoria>> buscarCategoria() async{
+//     Categoria otros =Categoria();
+//     otros.id = '0' ;
+//     otros.nome = 'Outros' ;
+//     List<Categoria> categorias = [];
+//     categorias.add(otros);
+//     // ignore: await_only_futures
+//     await FirebaseFirestore.instance.collection('Categoria').get().then((value) {      
+//       categorias.addAll(value.docs.map((doc) => Categoria.fromDoc(doc)).toList());
+//       return categorias;
+//     }).asStream();
+//     return categorias;
+// }  
   
-Future<int> getIndex(String projeto)  async{
-    int idx = 0;
-    // ignore: await_only_futures
-    await FirebaseFirestore.instance.collection('Projeto')
-        .doc(projeto)
-        .collection('despesa').get().then((value) {  
-          idx = value.size;    
-      return idx;
-    }).asStream();
-    return idx;
-}  
+// Future<int> getIndex(String projeto)  async{
+//     int idx = 0;
+//     // ignore: await_only_futures
+//     await FirebaseFirestore.instance.collection('Projeto')
+//         .doc(projeto)
+//         .collection('despesa').get().then((value) {  
+//           idx = value.size;    
+//       return idx;
+//     }).asStream();
+//     return idx;
+// }  
 
 Future<String> uploadImagem(ref,imageFile) async{
     final FirebaseStorage storage = FirebaseStorage.instance;
