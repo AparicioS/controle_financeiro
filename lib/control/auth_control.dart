@@ -14,6 +14,7 @@ class AuthControl  {
       UserCredential userCredential = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: senha);
       await userCredential.user!.updateDisplayName(nome);
       Usuario().caregaUsuarioLitUser(_firebaseAuth.currentUser);
+      cadastrarUsuario();
       return null;
     } on FirebaseAuthException catch (e) {
       return e.message;
@@ -24,6 +25,7 @@ class AuthControl  {
     try {
       await _firebaseAuth.signInWithEmailAndPassword(email: email, password: senha);
       Usuario().caregaUsuarioLitUser(_firebaseAuth.currentUser);
+      cadastrarUsuario();
       return null;
     } on FirebaseAuthException catch (e) {
       return e.message;
@@ -37,6 +39,7 @@ class AuthControl  {
       final credential = GoogleAuthProvider.credential(accessToken: googleAuth?.accessToken,idToken: googleAuth?.idToken,);
       await _firebaseAuth.signInWithCredential(credential);
       Usuario().caregaUsuarioLitUser(_firebaseAuth.currentUser);
+      cadastrarUsuario();
       return null;
     } on FirebaseAuthException catch (e) {
       return e.message;
@@ -45,13 +48,14 @@ class AuthControl  {
 
   Future<void> sair() async{
     return _firebaseAuth.signOut();
+  }
+  
+  Future<String>cadastrarUsuario()  async {    
+    return FirebaseFirestore.instance
+        .collection('Usuario')
+        .doc(Usuario().id)
+        .set(Usuario().toMap())
+        .then((value) => 'Sucesso')
+        .catchError((erro) => 'Falha');
   }  
-  /* metodo para controle de conexão para teste de persistencia off-line*/
-  Future<bool> disableNetwork() async{
-    if(!isOnline){
-      return FirebaseFirestore.instance.enableNetwork().then((value) => true);
-    }
-    return FirebaseFirestore.instance.disableNetwork().then((value) => false);
-  }  
-/*-------------------------------------------------------------------------------- */
 }

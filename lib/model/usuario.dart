@@ -1,4 +1,6 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Usuario {
   static Usuario _instance = Usuario._();
   Usuario._();
@@ -16,6 +18,20 @@ class Usuario {
         id = currentUser.uid;
         nome = currentUser.displayName;
         email = currentUser.email;
+  }
+   
+  Map<String, dynamic> toMap() {
+    var map = <String, dynamic>{};
+    map['nome'] = nome;
+    map['email'] = email;
+    return map;
+  }
+  
+  fromDoc(QueryDocumentSnapshot doc) {
+    Map<String, dynamic> map = doc.data() as Map<String, dynamic>;
+    id = doc.id;
+    nome = map['nome'];
+    email = map['email'];
   }
 
   @override

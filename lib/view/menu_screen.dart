@@ -17,9 +17,6 @@ class MenuScreen extends StatefulWidget {
 class _MenuScreenState extends State<MenuScreen> {
   final User? _currentUser = FirebaseAuth.instance.currentUser;
   
-  /* metodo para controle de conexão para teste de persistencia off-line*/
-  AuthControl ctrl =AuthControl();
-  /*---------------------------------------------*/
   @override
   Widget build(BuildContext context) {
     late double width = MediaQuery.of(context).size.width;
@@ -37,12 +34,6 @@ class _MenuScreenState extends State<MenuScreen> {
               accountName: Text(_currentUser.displayName.toString()), 
               accountEmail: Text(_currentUser.email.toString()),decoration: BoxDecoration(color: Cor.botaoCinza()),) ,
             ListTile(leading:const Icon(Icons.logout),title: const Text('sair'),dense: true, onTap:() =>  AuthControl().sair(),),
-            
-  /* metodo para controle de conexão para teste de persistencia off-line*/
-            ListTile(title: Text( ctrl.isOnline ?'online':'off'),dense: true, onTap:() =>  ctrl.disableNetwork().then((value) => setState(() {
-              ctrl.isOnline = value;
-            })),),
-  /*-------------------------------------------------------------------- */
             ],),
           ),
           appBar: AppBar(

@@ -13,7 +13,9 @@ class PontoScreen extends StatefulWidget {
   _PontoScreenState createState() => _PontoScreenState();
 }
 
-class _PontoScreenState extends State<PontoScreen> {
+class _PontoScreenState extends State<PontoScreen> with AutomaticKeepAliveClientMixin {
+    @override
+  bool get wantKeepAlive => true;
   late PontoControl _ctrlPonto;
   late ProjetoControl _ctrlProjeto;
   late String? _projetoId = '';
@@ -28,6 +30,7 @@ class _PontoScreenState extends State<PontoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     late double height = MediaQuery.of(context).size.height;
     late double width = MediaQuery.of(context).size.width;
     return SizedBox(
@@ -159,9 +162,9 @@ class _PontoScreenState extends State<PontoScreen> {
                                   ),
                                   child: Center(child: Row(
                                     children: [
-                                      Text('Horas Trabalhadas: ${_ctrlPonto.getTotal()}',style: TextStyle(color:Cor.sucesso())),
+                                      Text('Trabalhadas: ${_ctrlPonto.getTotal()}',style: TextStyle(color:Cor.sucesso())),
                                       Text(' - Pagas: ${_ctrlPonto.getHorasPagas()}'),
-                                      Text(' - Saldo: ${_ctrlPonto.getSalodo()}',style: TextStyle(color:(_ctrlPonto.getSalodo().contains('-')) ?Cor.erro():Cor.sucesso())),
+                                      Text(' - Saldo: ${_ctrlPonto.getSaldo()}',style: TextStyle(color:(_ctrlPonto.getSaldo().contains('-')) ?Cor.erro():Cor.sucesso())),
                                     ],
                                   ))),
                             ),

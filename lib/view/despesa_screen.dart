@@ -17,7 +17,9 @@ class DespesaScreen extends StatefulWidget {
   _DespesaScreenState createState() => _DespesaScreenState();
 }
 
-class _DespesaScreenState extends State<DespesaScreen> {
+class _DespesaScreenState extends State<DespesaScreen> with AutomaticKeepAliveClientMixin {
+    @override
+  bool get wantKeepAlive => true;
   // ignore: non_constant_identifier_names
   final _FormKey = GlobalKey<FormState>();
   final TextEditingController _ctrlDescricao = TextEditingController();
@@ -82,6 +84,7 @@ class _DespesaScreenState extends State<DespesaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     late double height = MediaQuery.of(context).size.height;
     late double width = MediaQuery.of(context).size.width;
     return Container(
