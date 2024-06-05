@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:controle_financeiro/control/despesa_control.dart';
 import 'package:controle_financeiro/control/projeto_control.dart';
 import 'package:controle_financeiro/model/categoria.dart';
@@ -60,7 +59,7 @@ class _DespesaScreenState extends State<DespesaScreen> with AutomaticKeepAliveCl
   Future<void> _submitData() async {
     if(_FormKey.currentState!.validate()){
       setState(() => _isProgress = true);
-        _despesaMap['valor'] = _ctrlValor.text;
+        _despesaMap['valor'] = double.parse(_ctrlValor.text.replaceAll(RegExp(r'[^0-9]'), '')) / 100; //_ctrlValor.text;
         _despesaMap['descricao'] = _ctrlDescricao.text;
       if (_imageFile != null) {
         try {
@@ -74,7 +73,6 @@ class _DespesaScreenState extends State<DespesaScreen> with AutomaticKeepAliveCl
               _despesaMap.clear();
               setState(() => _isProgress = false);
             });
-        //_despesa.urlImage ='$ref/$nome';
         } on FirebaseException  {
           setState(() => _isProgress = false);
         }
@@ -100,7 +98,7 @@ class _DespesaScreenState extends State<DespesaScreen> with AutomaticKeepAliveCl
                 builder: (context, snapshot) {
                   final List<Projeto> projectList = snapshot.data??[];
                   return DropdownButtonFormField<String>(
-                    validator: (value) => value == null ?'selecione um Projeto':null,
+                    validator: (value) => value == null ?'Selecione um Projeto':null,
                     onChanged: (value) {
                       setState(() {
                         if(value != null){
@@ -125,7 +123,7 @@ class _DespesaScreenState extends State<DespesaScreen> with AutomaticKeepAliveCl
                 builder: (context, snapshot) {
                   final List<Categoria> categoryList = snapshot.data??[];
                   return DropdownButtonFormField<String>(
-                    validator: (value) => value == null ?'selecione uma Categoria':null,
+                    validator: (value) => value == null ?'Selecione uma Categoria':null,
                     onChanged: (value) {
                       setState(() {
                         _despesaMap['categoria'] = value;
@@ -141,24 +139,34 @@ class _DespesaScreenState extends State<DespesaScreen> with AutomaticKeepAliveCl
                   );
                 }
               ),
-              SizedBox(height: height * 0.01),
-              TextFormField(
-                controller: _ctrlValor,
-                validator: (value) => value!.isEmpty ?'informe um valor':null,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: getInputDecoration('Valor'),
-              ),
               SizedBox(height: height*0.01),
               TextFormField(controller: _ctrlDescricao,
                 validator: (String? value) => value!.isEmpty? _validaDescricao() :null,
                 decoration: getInputDecoration('Descrição'),
               ),
-              SizedBox(height: height*0.05),
-              SizedBox(height:height*0.3 ,
-                child: _imageFile == null ? TextFormField(enabled: false,
-                validator: (value) => value!.isEmpty ?'envie uma imagem do comprovante':null,
-                decoration: const InputDecoration(hintText: 'Comprovate',),) 
-                :Image.file(_imageFile!,height: height*0.3,)),
+              SizedBox(height: height * 0.01),
+              TextFormField(
+                controller: _ctrlValor,
+                validator: (value) => value!.isEmpty ?'Informe um valor':null,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: getInputDecoration('Valor'),
+                inputFormatters: [CurrencyInputFormatter()],
+              ),
+              SizedBox(height: height*0.01),
+              SizedBox(
+                height:height*0.35 ,
+                child: _imageFile == null ? 
+                        TextFormField(
+                          enabled: false,
+                          validator: (value) => value!.isEmpty ?'Envie uma imagem do comprovante':null,
+                          decoration: const InputDecoration(
+                            hintText: 'imagem do comprovate',
+                            border: InputBorder.none
+                          ),
+                          textAlign: TextAlign.center,
+                          ) 
+                        :Image.file(_imageFile!,height: height*0.3,)),
+              SizedBox(height: height*0.01),
               Row(
                 verticalDirection: VerticalDirection.down,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -168,24 +176,22 @@ class _DespesaScreenState extends State<DespesaScreen> with AutomaticKeepAliveCl
                     width: width * 0.30,
                     child: Text(
                       'Tirar Foto',
-                      style: TextStyle(color: Cor.textoBotaoAzul()),
+                      style: TextStyle(color: Cor.textoBotaoAzul(),),
                     ),
                   ),
-                  SizedBox(
-                    width: width * 0.2,
-                  ),
+                  SizedBox(width: width * 0.2),
                   BotaoRodape(
                     onPressed: _submitData,
                     width: width * 0.30,
                     // ignore: dead_code
-                    child: _isProgress ? CircularProgressIndicator(color: Cor.botaoAzul(),):Text(
-                      'Enviar',
-                      style: TextStyle(color: Cor.textoBotaoAzul()),
-                    ),
+                    child: _isProgress ? 
+                          CircularProgressIndicator(color: Cor.botaoAzul(),):
+                          Text('Enviar',
+                            style: TextStyle(color: Cor.textoBotaoAzul()),
+                          ),
                   ),
                 ],
               ),
-              SizedBox(height: height*0.01),
             ],
           ),
         ),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 class Cor {
   static Color backgrud([double opacity = 1]) =>Color.fromRGBO(245, 245, 245, opacity);
@@ -47,4 +49,23 @@ class BotaoRodape extends TextButton {
                 alignment: Alignment.center,
                 decoration: getBoxDecoration(),
                 child: child));
+}
+
+class CurrencyInputFormatter extends TextInputFormatter {
+  final NumberFormat _formatter = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) {
+      return newValue.copyWith(text: '');
+    }
+
+    final double value = double.parse(newValue.text.replaceAll(RegExp(r'[^0-9]'), '')) / 100;
+    final String newText = _formatter.format(value);
+
+    return newValue.copyWith(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newText.length),
+    );
+  }
 }

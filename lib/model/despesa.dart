@@ -8,7 +8,7 @@ class Despesa {
   late String projeto;
   late String categoria;
   late String? descricao;
-  late String valor;
+  late double valor;
   late String image;
   late String data;
 
@@ -30,18 +30,15 @@ class Despesa {
   }
   
   Despesa.fromDoc(QueryDocumentSnapshot doc) {
-    // ignore: unnecessary_null_comparison
-    if (doc != null) {
-      Map<String, dynamic> map = doc.data()as Map<String, dynamic>;
-      id = int.parse(doc.id);
-      usuario = map['usuario'];
-      projeto = map['projeto'];
-      categoria = map['categoria'];
-      descricao = map['descricao'];
-      valor = map['valor'];
-      image = map['image'];
-      data = map['data'];
-    }
+    Map<String, dynamic> map = doc.data()as Map<String, dynamic>;
+    id = int.parse(doc.id);
+    usuario = map['usuario'];
+    projeto = map['projeto'];
+    categoria = map['categoria'];
+    descricao = map['descricao'];
+    valor = map['valor'];
+    image = map['image'];
+    data = map['data'];
   }
 
   Despesa.fromMap(Map<String, dynamic> map) {
